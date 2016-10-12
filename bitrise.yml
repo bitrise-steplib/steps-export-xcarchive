@@ -3,6 +3,8 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 app:
   envs:
+  - RELEASE_VERSION: 0.9.0
+
   # define these in your .bitrise.secrets.yml
   - BITRISE_XCARCHIVE_PATH: $BITRISE_XCARCHIVE_PATH
   - CUSTOM_EXPORT_OPTIONS_PLIST_CONTENT: $CUSTOM_EXPORT_OPTIONS_PLIST_CONTENT
@@ -74,6 +76,20 @@ workflows:
             echo "BITRISE_DSYM_PATH: $BITRISE_DSYM_PATH"
 
   # ----------------------------------------------------------------
+  # --- workflow to create Release version
+  create-release:
+    steps:
+    - script:
+        title:
+        inputs:
+        - content: |
+            #!/bin/bash
+            set -ex
+            go get -u github.com/bitrise-tools/releaseman
+            export CI=true
+            releaseman create --version "$RELEASE_VERSION"
+
+  # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:
     steps:
@@ -87,10 +103,10 @@ workflows:
   share-this-step:
     envs:
       # if you want to share this step into a StepLib
-      - MY_STEPLIB_REPO_FORK_GIT_URL:
-      - STEP_ID_IN_STEPLIB:
-      - STEP_GIT_VERION_TAG_TO_SHARE:
-      - STEP_GIT_CLONE_URL:
+      - MY_STEPLIB_REPO_FORK_GIT_URL: $MY_STEPLIB_REPO_FORK_GIT_URL
+      - STEP_ID_IN_STEPLIB: export-xcarchive
+      - STEP_GIT_VERION_TAG_TO_SHARE: $RELEASE_VERSION
+      - STEP_GIT_CLONE_URL: https://github.com/bitrise-steplib/steps-export-xcarchive.git
     description: |-
       If this is the first time you try to share a Step you should
       first call: $ bitrise share
