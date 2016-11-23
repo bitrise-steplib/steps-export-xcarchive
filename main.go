@@ -21,9 +21,9 @@ import (
 )
 
 const (
-	bitriseIDEDistributionLogsPthEnvKey = "BITRISE_IDEDISTRIBUTION_LOGS_PATH"
 	bitriseIPAPthEnvKey                 = "BITRISE_IPA_PATH"
 	bitriseDSYMPthEnvKey                = "BITRISE_DSYM_PATH"
+	bitriseIDEDistributionLogsPthEnvKey = "BITRISE_IDEDISTRIBUTION_LOGS_PATH"
 )
 
 // ConfigsModel ...
@@ -172,8 +172,8 @@ func main() {
 	}
 	fmt.Println()
 
-	archiveName := filepath.Base(configs.ArchivePath)
 	archiveExt := filepath.Ext(configs.ArchivePath)
+	archiveName := filepath.Base(configs.ArchivePath)
 	archiveName = strings.TrimSuffix(archiveName, archiveExt)
 
 	ipaPath := filepath.Join(configs.DeployDir, archiveName+".ipa")

@@ -130,5 +130,6 @@ outputs:
       title: The created iOS or tvOS .dSYM zip file's path.
       description: |-
         Step will collect every dsym (app dsym and framwork dsyms) in a directory, zip it and export the zipped directory path.
-
-
+  - BITRISE_IDEDISTRIBUTION_LOGS_PATH:
+    opts:
+      title: Path to the xcdistributionlogs zip
