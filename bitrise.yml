@@ -171,7 +171,6 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-
             no_vendor_paths="$(go list ./... | grep -v vendor)"
             envman add --key GOLIST_WITHOUT_VENDOR --value "$no_vendor_paths"
     - script:
@@ -180,7 +179,6 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-
             errcheck -asserts=true -blank=true $GOLIST_WITHOUT_VENDOR
     - script:
         title: Go lint
@@ -204,8 +202,7 @@ workflows:
         - content: |-
             #!/bin/bash
             set -ex
-
-            go test $(go list ./... | grep -v vendor)
+            go test $GOLIST_WITHOUT_VENDOR
 
   _install-test-tools:
     steps:
