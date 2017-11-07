@@ -127,6 +127,10 @@ workflows:
     - xcode-archive:
         inputs:
         - output_tool: xcodebuild
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   _common_prepare:
     steps:
