@@ -51,6 +51,10 @@ workflows:
     - xamarin-archive:
         inputs:
         - project_type_whitelist: ios
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   test_xcode:
     envs:
@@ -101,6 +105,10 @@ workflows:
     - xcode-archive:
         inputs:
         - output_tool: xcodebuild
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   test_xcode_7:
     envs:
