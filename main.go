@@ -14,7 +14,6 @@ import (
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/steps-xcode-archive/utils"
-	"github.com/bitrise-steplib/steps-export-xcarchive/archive"
 	"github.com/bitrise-tools/go-xcode/certificateutil"
 	"github.com/bitrise-tools/go-xcode/export"
 	"github.com/bitrise-tools/go-xcode/exportoptions"
@@ -239,7 +238,7 @@ func main() {
 		}
 	}
 
-	archive, err := archive.NewXCArchive(configs.ArchivePath)
+	archive, err := xcarchive.NewXCArchive(configs.ArchivePath)
 	if err != nil {
 		fail("Failed to parse archive, error: %s", err)
 	}
@@ -585,7 +584,7 @@ is available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable`)
 
 	log.Donef("The ipa path is now available in the Environment Variable: %s (value: %s)", bitriseIPAPthEnvKey, ipaPath)
 
-	appDSYM, _, err := xcarchive.FindDSYMs(configs.ArchivePath)
+	appDSYM, _, err := archive.FindDSYMs()
 	if err != nil {
 		fail("Failed to export dsym, error: %s", err)
 	}
