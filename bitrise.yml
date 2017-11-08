@@ -82,9 +82,7 @@ workflows:
                     <string>iOS Team Provisioning Profile: com.bitrise.code-sign-test.watchkitapp.watchkitextension</string>
                 </dict>
                 <key>signingCertificate</key>
-                <string>iPhone Developer: Gödrei Krisztian (T3694PR6UJ)</string>
-                <key>teamID</key>
-                <string>339CX9E66J</string>
+                <string>iPhone Developer</string>
             </dict>
         </plist>
     before_run: 
