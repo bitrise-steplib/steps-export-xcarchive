@@ -239,7 +239,7 @@ workflows:
 
   # ----------------------------------------------------------------
   # --- Utility workflows
- dep-update:
+  dep-update:
     title: Dep update
     description: |
       Used for updating bitrise dependencies with dep
