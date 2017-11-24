@@ -307,76 +307,74 @@ func main() {
 
 				filters := []export.SelectableCodeSignGroupFilter{}
 
-				if len(bundleIDEntitlementsMap) > 0 {
-					log.Warnf("Filtering CodeSignInfo groups for target capabilities")
+				log.Warnf("Filtering CodeSignInfo groups for target capabilities")
+				filters = append(filters,
+					export.CreateEntitlementsSelectableCodeSignGroupFilter(bundleIDEntitlementsMap))
+
+				log.Warnf("Filtering CodeSignInfo groups for export method")
+				filters = append(filters,
+					export.CreateExportMethodSelectableCodeSignGroupFilter(exportMethod))
+
+				if configs.TeamID != "" {
+					log.Warnf("Export TeamID specified: %s, filtering CodeSignInfo groups...", configs.TeamID)
 					filters = append(filters,
-						export.CreateEntitlementsSelectableCodeSignGroupFilter(bundleIDEntitlementsMap))
+						export.CreateTeamSelectableCodeSignGroupFilter(configs.TeamID))
+				}
 
-					log.Warnf("Filtering CodeSignInfo groups for export method")
-					filters = append(filters,
-						export.CreateExportMethodSelectableCodeSignGroupFilter(exportMethod))
+				if !archiveCodeSignIsXcodeManaged {
+					log.Warnf("App was signed with NON xcode managed profile when archiving,\n" +
+						"only NOT xcode managed profiles are allowed to sign when exporting the archive.\n" +
+						"Removing xcode managed CodeSignInfo groups")
+					filters = append(filters, export.CreateNotXcodeManagedSelectableCodeSignGroupFilter())
+				}
 
-					if configs.TeamID != "" {
-						log.Warnf("Export TeamID specified: %s, filtering CodeSignInfo groups...", configs.TeamID)
-						filters = append(filters,
-							export.CreateTeamSelectableCodeSignGroupFilter(configs.TeamID))
+				codeSignGroups = export.FilterSelectableCodeSignGroups(codeSignGroups, filters...)
+
+				defaultProfileURL := os.Getenv("BITRISE_DEFAULT_PROVISION_URL")
+				if configs.TeamID == "" && defaultProfileURL != "" {
+					if defaultProfile, err := utils.GetDefaultProvisioningProfile(); err == nil {
+						log.Debugf("\ndefault profile: %v\n", defaultProfile)
+						filteredCodeSignGroups := export.FilterSelectableCodeSignGroups(codeSignGroups,
+							export.CreateExcludeProfileNameSelectableCodeSignGroupFilter(defaultProfile.Name))
+						if len(filteredCodeSignGroups) > 0 {
+							codeSignGroups = filteredCodeSignGroups
+						}
+					}
+				}
+
+				iosCodeSignGroups := export.CreateIosCodeSignGroups(codeSignGroups)
+
+				if len(iosCodeSignGroups) > 0 {
+					codeSignGroup := export.IosCodeSignGroup{}
+
+					if len(iosCodeSignGroups) >= 1 {
+						codeSignGroup = iosCodeSignGroups[0]
+					}
+					if len(iosCodeSignGroups) > 1 {
+						log.Warnf("Multiple code signing groups found! Using the first code signing group")
 					}
 
-					if !archiveCodeSignIsXcodeManaged {
-						log.Warnf("App was signed with NON xcode managed profile when archiving,\n" +
-							"only NOT xcode managed profiles are allowed to sign when exporting the archive.\n" +
-							"Removing xcode managed CodeSignInfo groups")
-						filters = append(filters, export.CreateNotXcodeManagedSelectableCodeSignGroupFilter())
-					}
+					exportTeamID = codeSignGroup.Certificate.TeamID
+					exportCodeSignIdentity = codeSignGroup.Certificate.CommonName
 
-					codeSignGroups = export.FilterSelectableCodeSignGroups(codeSignGroups, filters...)
+					for bundleID, profileInfo := range codeSignGroup.BundleIDProfileMap {
+						exportProfileMapping[bundleID] = profileInfo.Name
 
-					defaultProfileURL := os.Getenv("BITRISE_DEFAULT_PROVISION_URL")
-					if configs.TeamID == "" && defaultProfileURL != "" {
-						if defaultProfile, err := utils.GetDefaultProvisioningProfile(); err == nil {
-							log.Debugf("\ndefault profile: %v\n", defaultProfile)
-							filteredCodeSignGroups := export.FilterSelectableCodeSignGroups(codeSignGroups,
-								export.CreateExcludeProfileNameSelectableCodeSignGroupFilter(defaultProfile.Name))
-							if len(filteredCodeSignGroups) > 0 {
-								codeSignGroups = filteredCodeSignGroups
+						isXcodeManaged := profileutil.IsXcodeManaged(profileInfo.Name)
+						if isXcodeManaged {
+							if exportCodeSignStyle != "" && exportCodeSignStyle != "automatic" {
+								log.Errorf("Both xcode managed and NON xcode managed profiles in code signing group")
 							}
-						}
-					}
-
-					iosCodeSignGroups := export.CreateIosCodeSignGroups(codeSignGroups)
-
-					if len(iosCodeSignGroups) > 0 {
-						codeSignGroup := export.IosCodeSignGroup{}
-
-						if len(iosCodeSignGroups) >= 1 {
-							codeSignGroup = iosCodeSignGroups[0]
-						}
-						if len(iosCodeSignGroups) > 1 {
-							log.Warnf("Multiple code signing groups found! Using the first code signing group")
-						}
-
-						exportTeamID = codeSignGroup.Certificate.TeamID
-						exportCodeSignIdentity = codeSignGroup.Certificate.CommonName
-
-						for bundleID, profileInfo := range codeSignGroup.BundleIDProfileMap {
-							exportProfileMapping[bundleID] = profileInfo.Name
-
-							isXcodeManaged := profileutil.IsXcodeManaged(profileInfo.Name)
-							if isXcodeManaged {
-								if exportCodeSignStyle != "" && exportCodeSignStyle != "automatic" {
-									log.Errorf("Both xcode managed and NON xcode managed profiles in code signing group")
-								}
-								exportCodeSignStyle = "automatic"
-							} else {
-								if exportCodeSignStyle != "" && exportCodeSignStyle != "manual" {
-									log.Errorf("Both xcode managed and NON xcode managed profiles in code signing group")
-								}
-								exportCodeSignStyle = "manual"
+							exportCodeSignStyle = "automatic"
+						} else {
+							if exportCodeSignStyle != "" && exportCodeSignStyle != "manual" {
+								log.Errorf("Both xcode managed and NON xcode managed profiles in code signing group")
 							}
+							exportCodeSignStyle = "manual"
 						}
-					} else {
-						log.Errorf("Failed to find Codesign Groups")
 					}
+				} else {
+					log.Errorf("Failed to find Codesign Groups")
 				}
 
 				var exportOpts exportoptions.ExportOptions
