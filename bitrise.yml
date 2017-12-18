@@ -75,16 +75,18 @@ workflows:
                 <key>provisioningProfiles</key>
                 <dict>
                     <key>com.bitrise.code-sign-test</key>
-                    <string>iOS Team Provisioning Profile: com.bitrise.code-sign-test</string>
+                    <string>BitriseBot-Wildcard</string>
                     <key>com.bitrise.code-sign-test.share-extension</key>
-                    <string>iOS Team Provisioning Profile: com.bitrise.code-sign-test.share-extension</string>
+                    <string>BitriseBot-Wildcard</string>
                     <key>com.bitrise.code-sign-test.watchkitapp</key>
-                    <string>iOS Team Provisioning Profile: com.bitrise.code-sign-test.watchkitapp</string>
+                    <string>BitriseBot-Wildcard</string>
                     <key>com.bitrise.code-sign-test.watchkitapp.watchkitextension</key>
-                    <string>iOS Team Provisioning Profile: com.bitrise.code-sign-test.watchkitapp.watchkitextension</string>
+                    <string>BitriseBot-Wildcard</string>
                 </dict>
                 <key>signingCertificate</key>
-                <string>iPhone Developer</string>
+                <string>iPhone Developer: Bitrise Bot (VV2J4SV8V4)</string>
+                <key>teamID</key>
+                <string>72SA8V3WYL</string>
             </dict>
         </plist>
     before_run: 
