@@ -428,10 +428,7 @@ func main() {
 				fail("Failed to generate export options, error: %s", err)
 			}
 
-			fmt.Println()
-			log.Printf("generated export options content:")
-			fmt.Println()
-			fmt.Println(exportOptionsContent)
+			log.Printf("\ngenerated export options content:\n%s", exportOptionsContent)
 
 			if err := fileutil.WriteStringToFile(exportOptionsPath, exportOptionsContent); err != nil {
 				fail("Failed to write export options to file, error: %s", err)
