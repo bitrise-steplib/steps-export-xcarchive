@@ -45,8 +45,8 @@ inputs:
 
         Describes how Xcode should export the archive.   
         
-        If you select `auto-detect` step will figure out proper export method  
-        based on provisioning profile embedded into the generated xcode archive.
+        If you select `auto-detect`, the step will figure out the proper export method  
+        based on the provisioning profile embedded into the generated xcode archive.
       value_options:
       - "auto-detect"
       - "app-store"
@@ -123,7 +123,7 @@ inputs:
       description: |-
         This input will be used if `use_legacy_export` is set to `"yes"`.
 
-        If this input is empty the step will use the embedded provisining profile.
+        If this input is empty, the step will use the embedded provisining profile.
   - verbose_log: "yes"
     opts:
       category: Debug
