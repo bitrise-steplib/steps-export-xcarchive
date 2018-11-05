@@ -32,7 +32,7 @@ workflows:
   test_xamarin:
     envs:
     - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git
-    - BRANCH: master
+    - BRANCH: developer_profile
     - BITRISE_PROJECT_PATH: Multiplatform.sln
     - BITRISE_XAMARIN_CONFIGURATION: Release
     - BITRISE_XAMARIN_PLATFORM: iPhone
@@ -85,25 +85,36 @@ workflows:
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
             <dict>
-                <key>method</key>
-                <string>development</string>
-                <key>provisioningProfiles</key>
-                <dict>
-                    <key>com.bitrise.code-sign-test</key>
-                    <string>BitriseBot-Wildcard</string>
-                    <key>com.bitrise.code-sign-test.share-extension</key>
-                    <string>BitriseBot-Wildcard</string>
-                    <key>com.bitrise.code-sign-test.watchkitapp</key>
-                    <string>BitriseBot-Wildcard</string>
-                    <key>com.bitrise.code-sign-test.watchkitapp.watchkitextension</key>
-                    <string>BitriseBot-Wildcard</string>
-                </dict>
-                <key>signingCertificate</key>
-                <string>iPhone Developer: Bitrise Bot (VV2J4SV8V4)</string>
-                <key>teamID</key>
-                <string>72SA8V3WYL</string>
+            	<key>compileBitcode</key>
+            	<false/>
+            	<key>destination</key>
+            	<string>export</string>
+            	<key>method</key>
+            	<string>development</string>
+            	<key>provisioningProfiles</key>
+            	<dict>
+            		<key>com.bitrise.code-sign-test</key>
+            		<string>Bitrise development - (com.bitrise.code-sign-test)</string>
+            		<key>com.bitrise.code-sign-test.share-extension</key>
+            		<string>Bitrise development - (com.bitrise.code-sign-test.share-extension)</string>
+            		<key>com.bitrise.code-sign-test.watchkitapp</key>
+            		<string>Bitrise development - (com.bitrise.code-sign-test.watchkitapp)</string>
+            		<key>com.bitrise.code-sign-test.watchkitapp.watchkitextension</key>
+            		<string>Bitrise development - (com.bitrise.code-sign-test.watchkitapp.watchkitextension)</string>
+            	</dict>
+            	<key>signingCertificate</key>
+            	<string>iPhone Developer: Bitrise Bot (VV2J4SV8V4)</string>
+            	<key>signingStyle</key>
+            	<string>manual</string>
+            	<key>stripSwiftSymbols</key>
+            	<true/>
+            	<key>teamID</key>
+            	<string>72SA8V3WYL</string>
+            	<key>thinning</key>
+            	<string>&lt;none&gt;</string>
             </dict>
         </plist>
+
     before_run: 
     - _common_prepare
     after_run:
@@ -146,6 +157,35 @@ workflows:
     - FORCE_CODE_SIGN_IDENTITY: "iPhone Developer: Bitrise Bot"
     - FORCE_TEAM_ID: 72SA8V3WYL
     - LEGACY: "no"
+    - PLIST: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+            <dict>
+            	<key>compileBitcode</key>
+            	<false/>
+            	<key>destination</key>
+            	<string>export</string>
+            	<key>method</key>
+            	<string>development</string>
+            	<key>provisioningProfiles</key>
+            	<dict>
+            		<key>Bitrise.ios-simple-objc</key>
+            		<string>BitriseBot-Wildcard</string>
+            	</dict>
+            	<key>signingCertificate</key>
+            	<string>7C98471BFDDF66FFB1AD399AD282AC05EF44D464</string>
+            	<key>signingStyle</key>
+            	<string>manual</string>
+            	<key>stripSwiftSymbols</key>
+            	<true/>
+            	<key>teamID</key>
+            	<string>72SA8V3WYL</string>
+            	<key>thinning</key>
+            	<string>&lt;none&gt;</string>
+            </dict>
+        </plist>
+
     before_run: 
     - _common_prepare
     after_run:
@@ -186,7 +226,36 @@ workflows:
     - BITRISE_PROJECT_PATH: NPO Live.xcworkspace
     - BITRISE_SCHEME: NPO Live
     - LEGACY: "no"
-    - PLIST: ""
+    - PLIST: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+            <dict>
+            	<key>compileBitcode</key>
+            	<false/>
+            	<key>destination</key>
+            	<string>export</string>
+            	<key>method</key>
+            	<string>development</string>
+            	<key>provisioningProfiles</key>
+            	<dict>
+            		<key>bdh.NPO-Live.bitrise.sample</key>
+            		<string>Bitrise bdh NPOLive TVOS_dev</string>
+            	</dict>
+            	<key>signingCertificate</key>
+            	<string>7C98471BFDDF66FFB1AD399AD282AC05EF44D464</string>
+            	<key>signingStyle</key>
+            	<string>manual</string>
+            	<key>stripSwiftSymbols</key>
+            	<false/>
+            	<key>teamID</key>
+            	<string>72SA8V3WYL</string>
+            	<key>thinning</key>
+            	<string>&lt;none&gt;</string>
+            </dict>
+        </plist>
+
+
     before_run: 
     - _common_prepare
     after_run:
