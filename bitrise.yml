@@ -16,8 +16,8 @@ workflows:
     - errcheck:
     - go-test:
     after_run:
-    - test_xamarin
-    - test_xcode
+    # - test_xamarin
+    # - test_xcode
     - test_tvos
 
   test_legacy:
