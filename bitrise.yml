@@ -174,7 +174,7 @@ workflows:
             		<string>BitriseBot-Wildcard</string>
             	</dict>
             	<key>signingCertificate</key>
-            	<string>7C98471BFDDF66FFB1AD399AD282AC05EF44D464</string>
+            	<string>6807132550712878682</string>
             	<key>signingStyle</key>
             	<string>manual</string>
             	<key>stripSwiftSymbols</key>
@@ -243,7 +243,7 @@ workflows:
             		<string>Bitrise bdh NPOLive TVOS_dev</string>
             	</dict>
             	<key>signingCertificate</key>
-            	<string>7C98471BFDDF66FFB1AD399AD282AC05EF44D464</string>
+            	<string>6807132550712878682</string>
             	<key>signingStyle</key>
             	<string>manual</string>
             	<key>stripSwiftSymbols</key>
