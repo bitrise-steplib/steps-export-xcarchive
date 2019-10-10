@@ -240,7 +240,7 @@ workflows:
             	<key>provisioningProfiles</key>
             	<dict>
             		<key>bdh.NPO-Live.bitrise.sample</key>
-            		<string>Bitrise bdh NPOLive TVOS_dev</string>
+            		<string>Bitrise development - (bdh.NPO-Live.bitrise.sample)</string>
             	</dict>
             	<key>signingCertificate</key>
             	<string>iPhone Developer: Bitrise Bot</string>
