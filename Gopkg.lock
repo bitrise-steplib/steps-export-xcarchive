@@ -3,7 +3,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2819a7021183e335846964a9a3decd8344047e0869a38b9beb76c81cf665d4d1"
+  digest = "1:b27850118cd70ccd7966d1943a9c3817365bc251b606aff5f12609cf21adf29b"
   name = "github.com/bitrise-io/go-utils"
   packages = [
     "colorstring",
@@ -18,7 +18,7 @@
     "ziputil",
   ]
   pruneopts = ""
-  revision = "e25bd13153e87e91289343f55b3ee8d3228fb7ac"
+  revision = "5067a2a682f21030f379f88e853b9e0734a24516"
 
 [[projects]]
   branch = "master"
@@ -26,11 +26,14 @@
   name = "github.com/bitrise-io/go-xcode"
   packages = [
     "certificateutil",
+    "export",
     "exportoptions",
     "models",
     "plistutil",
     "profileutil",
     "utility",
+    "xcarchive",
+    "xcodebuild",
   ]
   pruneopts = ""
   revision = "19cbfe6430acc193d779847a13be0b8585d866c1"
@@ -58,22 +61,6 @@
   ]
   pruneopts = ""
   revision = "a4e01d69cacc7dd9acbe8fb987dba69c9ce01b1c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:a5f12c062c76eac7bbcdd12e0383125961a24185ec5da378aaf67d22a46915fd"
-  name = "github.com/bitrise-tools/go-xcode"
-  packages = [
-    "certificateutil",
-    "export",
-    "exportoptions",
-    "profileutil",
-    "utility",
-    "xcarchive",
-    "xcodebuild",
-  ]
-  pruneopts = ""
-  revision = "19cbfe6430acc193d779847a13be0b8585d866c1"
 
 [[projects]]
   branch = "master"
@@ -130,14 +117,14 @@
     "github.com/bitrise-io/go-utils/fileutil",
     "github.com/bitrise-io/go-utils/log",
     "github.com/bitrise-io/go-utils/pathutil",
+    "github.com/bitrise-io/go-xcode/certificateutil",
+    "github.com/bitrise-io/go-xcode/export",
+    "github.com/bitrise-io/go-xcode/exportoptions",
+    "github.com/bitrise-io/go-xcode/profileutil",
+    "github.com/bitrise-io/go-xcode/utility",
+    "github.com/bitrise-io/go-xcode/xcarchive",
+    "github.com/bitrise-io/go-xcode/xcodebuild",
     "github.com/bitrise-io/steps-xcode-archive/utils",
-    "github.com/bitrise-tools/go-xcode/certificateutil",
-    "github.com/bitrise-tools/go-xcode/export",
-    "github.com/bitrise-tools/go-xcode/exportoptions",
-    "github.com/bitrise-tools/go-xcode/profileutil",
-    "github.com/bitrise-tools/go-xcode/utility",
-    "github.com/bitrise-tools/go-xcode/xcarchive",
-    "github.com/bitrise-tools/go-xcode/xcodebuild",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
