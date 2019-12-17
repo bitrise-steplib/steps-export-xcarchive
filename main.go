@@ -472,7 +472,7 @@ func main() {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
-			exportOptionsContent, err := generateExportOptionsPlist(configs.ExportMethod, configs.TeamID, configs.UploadBitcode == "true", configs.CompileBitcode == "true", xcodebuildVersion.MajorVersion, archive)
+			exportOptionsContent, err := generateExportOptionsPlist(configs.ExportMethod, configs.TeamID, configs.UploadBitcode == "yes", configs.CompileBitcode == "yes", xcodebuildVersion.MajorVersion, archive)
 			if err != nil {
 				fail("Failed to generate export options, error: %s", err)
 			}
