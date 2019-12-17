@@ -7,16 +7,15 @@ import (
 
 func TestConfig_validate(t *testing.T) {
 	type fields struct {
-		ArchivePath                         string
-		ExportMethod                        string
-		UploadBitcode                       bool
-		CompileBitcode                      bool
-		TeamID                              string
-		CustomExportOptionsPlistContent     string
-		UseLegacyExport                     bool
-		LegacyExportProvisioningProfileName string
-		DeployDir                           string
-		VerboseLog                          bool
+		ArchivePath                     string
+		ExportMethod                    string
+		UploadBitcode                   bool
+		CompileBitcode                  bool
+		TeamID                          string
+		CustomExportOptionsPlistContent string
+		UseLegacyExport                 bool
+		DeployDir                       string
+		VerboseLog                      bool
 	}
 	tests := []struct {
 		name    string
@@ -48,28 +47,26 @@ func TestConfig_validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			configs := &Config{
-				ArchivePath:                         tt.fields.ArchivePath,
-				ExportMethod:                        tt.fields.ExportMethod,
-				UploadBitcode:                       tt.fields.UploadBitcode,
-				CompileBitcode:                      tt.fields.CompileBitcode,
-				TeamID:                              tt.fields.TeamID,
-				CustomExportOptionsPlistContent:     tt.fields.CustomExportOptionsPlistContent,
-				UseLegacyExport:                     tt.fields.UseLegacyExport,
-				LegacyExportProvisioningProfileName: tt.fields.LegacyExportProvisioningProfileName,
-				DeployDir:                           tt.fields.DeployDir,
-				VerboseLog:                          tt.fields.VerboseLog,
+				ArchivePath:                     tt.fields.ArchivePath,
+				ExportMethod:                    tt.fields.ExportMethod,
+				UploadBitcode:                   tt.fields.UploadBitcode,
+				CompileBitcode:                  tt.fields.CompileBitcode,
+				TeamID:                          tt.fields.TeamID,
+				CustomExportOptionsPlistContent: tt.fields.CustomExportOptionsPlistContent,
+				UseLegacyExport:                 tt.fields.UseLegacyExport,
+				DeployDir:                       tt.fields.DeployDir,
+				VerboseLog:                      tt.fields.VerboseLog,
 			}
 			wantConfigs := &Config{
-				ArchivePath:                         tt.want.ArchivePath,
-				ExportMethod:                        tt.want.ExportMethod,
-				UploadBitcode:                       tt.want.UploadBitcode,
-				CompileBitcode:                      tt.want.CompileBitcode,
-				TeamID:                              tt.want.TeamID,
-				CustomExportOptionsPlistContent:     tt.want.CustomExportOptionsPlistContent,
-				UseLegacyExport:                     tt.want.UseLegacyExport,
-				LegacyExportProvisioningProfileName: tt.want.LegacyExportProvisioningProfileName,
-				DeployDir:                           tt.want.DeployDir,
-				VerboseLog:                          tt.want.VerboseLog,
+				ArchivePath:                     tt.want.ArchivePath,
+				ExportMethod:                    tt.want.ExportMethod,
+				UploadBitcode:                   tt.want.UploadBitcode,
+				CompileBitcode:                  tt.want.CompileBitcode,
+				TeamID:                          tt.want.TeamID,
+				CustomExportOptionsPlistContent: tt.want.CustomExportOptionsPlistContent,
+				UseLegacyExport:                 tt.want.UseLegacyExport,
+				DeployDir:                       tt.want.DeployDir,
+				VerboseLog:                      tt.want.VerboseLog,
 			}
 			if err := configs.validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Config.validate() error = %v, wantErr %v", err, tt.wantErr)

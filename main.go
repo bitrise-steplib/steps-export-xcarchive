@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/log"
@@ -20,7 +21,6 @@ import (
 	"github.com/bitrise-io/go-xcode/xcarchive"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
 	"github.com/bitrise-steplib/steps-xcode-archive/utils"
-	"github.com/bitrise-io/go-steputils/stepconf"
 	"howett.net/plist"
 )
 
@@ -40,8 +40,7 @@ type Config struct {
 	TeamID                          string `env:"team_id"`
 	CustomExportOptionsPlistContent string `env:"custom_export_options_plist_content"`
 
-	UseLegacyExport                     bool   `env:"use_legacy_export,opt[yes,no]"`
-	LegacyExportProvisioningProfileName string `env:"legacy_export_provisioning_profile_name"` // Unused
+	UseLegacyExport bool `env:"use_legacy_export,opt[yes,no]"`
 
 	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
 	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
