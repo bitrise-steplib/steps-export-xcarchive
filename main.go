@@ -19,8 +19,8 @@ import (
 	"github.com/bitrise-io/go-xcode/utility"
 	"github.com/bitrise-io/go-xcode/xcarchive"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
-	"github.com/bitrise-io/steps-xcode-archive/utils"
-	"github.com/bitrise-steplib/go-steputils/stepconf"
+	"github.com/bitrise-steplib/steps-xcode-archive/utils"
+	"github.com/bitrise-io/go-steputils/stepconf"
 	"howett.net/plist"
 )
 
