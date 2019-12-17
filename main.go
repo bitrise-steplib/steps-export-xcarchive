@@ -30,8 +30,8 @@ const (
 	bitriseIDEDistributionLogsPthEnvKey = "BITRISE_IDEDISTRIBUTION_LOGS_PATH"
 )
 
-// ConfigsModel ...
-type ConfigsModel struct {
+// Config ...
+type Config struct {
 	ArchivePath string `env:"archive_path,file"`
 
 	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
@@ -45,6 +45,37 @@ type ConfigsModel struct {
 
 	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
 	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
+}
+
+func (configs Config) validate() error {
+	if configs.ExportMethod == "auto-detect" {
+		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
+		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
+		fmt.Println()
+	}
+
+	// Validate CustomExportOptionsPlistContent
+	trimmedExportOptions := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
+	if configs.CustomExportOptionsPlistContent != trimmedExportOptions {
+		configs.CustomExportOptionsPlistContent = trimmedExportOptions
+		log.Warnf("CustomExportOptionsPlistContent contains leading and trailing white space, removed:")
+		log.Printf(configs.CustomExportOptionsPlistContent)
+		fmt.Println()
+	}
+	if configs.CustomExportOptionsPlistContent != "" {
+		var options map[string]interface{}
+		if _, err := plist.Unmarshal([]byte(configs.CustomExportOptionsPlistContent), &options); err != nil {
+			return fmt.Errorf("issue with input CustomExportOptionsPlistContent: %s", err.Error())
+		}
+	}
+
+	trimmedTeamID := strings.TrimSpace(configs.TeamID)
+	if configs.TeamID != trimmedTeamID {
+		configs.TeamID = trimmedTeamID
+		log.Warnf("TeamID contains leading and trailing white space, removed: %s", configs.TeamID)
+	}
+
+	return nil
 }
 
 func fail(format string, v ...interface{}) {
@@ -312,33 +343,17 @@ func generateExportOptionsPlist(exportMethodStr, teamID string, uploadBitcode, c
 }
 
 func main() {
-	var configs ConfigsModel
+	var configs Config
 	if err := stepconf.Parse(&configs); err != nil {
 		fail("Issue with input: %s", err)
 	}
+	if err := configs.validate(); err != nil {
+		fail("Issue with input: %s", err)
+	}
+
 	stepconf.Print(configs)
 	fmt.Println()
 	log.SetEnableDebugLog(configs.VerboseLog)
-
-	if configs.ExportMethod == "auto-detect" {
-		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
-		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
-		fmt.Println()
-	}
-
-	// Validate CustomExportOptionsPlistContent
-	customExportOptionsPlistContent := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
-	if customExportOptionsPlistContent != configs.CustomExportOptionsPlistContent {
-		log.Warnf("CustomExportOptionsPlistContent is stripped of leading and trailing white space.")
-		log.Printf(customExportOptionsPlistContent)
-		fmt.Println()
-	}
-	if customExportOptionsPlistContent != "" {
-		var options map[string]interface{}
-		if _, err := plist.Unmarshal([]byte(configs.CustomExportOptionsPlistContent), &options); err != nil {
-			fail("issue with input CustomExportOptionsPlistContent: " + err.Error())
-		}
-	}
 
 	log.Infof("Step determined configs:")
 
@@ -404,11 +419,11 @@ func main() {
 	} else {
 		log.Infof("Exporting with export options...")
 
-		if customExportOptionsPlistContent != "" {
+		if configs.CustomExportOptionsPlistContent != "" {
 			log.Printf("Custom export options content provided, using it:")
-			fmt.Println(customExportOptionsPlistContent)
+			fmt.Println(configs.CustomExportOptionsPlistContent)
 
-			if err := fileutil.WriteStringToFile(exportOptionsPath, customExportOptionsPlistContent); err != nil {
+			if err := fileutil.WriteStringToFile(exportOptionsPath, configs.CustomExportOptionsPlistContent); err != nil {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
