@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,6 +20,8 @@ import (
 	"github.com/bitrise-io/go-xcode/xcarchive"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
 	"github.com/bitrise-io/steps-xcode-archive/utils"
+	"github.com/bitrise-steplib/go-steputils/stepconf"
+	"howett.net/plist"
 )
 
 const (
@@ -31,91 +32,19 @@ const (
 
 // ConfigsModel ...
 type ConfigsModel struct {
-	ArchivePath string
+	ArchivePath string `env:"archive_path,file"`
 
-	ExportMethod                    string
-	UploadBitcode                   string
-	CompileBitcode                  string
-	TeamID                          string
-	CustomExportOptionsPlistContent string
+	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
+	UploadBitcode                   string `env:"upload_bitcode,opt[yes,no]"`
+	CompileBitcode                  string `env:"compile_bitcode,opt[yes,no]"`
+	TeamID                          string `env:"team_id"`
+	CustomExportOptionsPlistContent string `env:"custom_export_options_plist_content"`
 
-	UseLegacyExport                     string
-	LegacyExportProvisioningProfileName string
+	UseLegacyExport                     string `env:"use_legacy_export,opt[yes,no]"`
+	LegacyExportProvisioningProfileName string `env:"legacy_export_provisioning_profile_name"` // Unused
 
-	DeployDir  string
-	VerboseLog string
-}
-
-func createConfigsModelFromEnvs() ConfigsModel {
-	return ConfigsModel{
-		ArchivePath: os.Getenv("archive_path"),
-
-		ExportMethod:                    os.Getenv("export_method"),
-		UploadBitcode:                   os.Getenv("upload_bitcode"),
-		CompileBitcode:                  os.Getenv("compile_bitcode"),
-		TeamID:                          os.Getenv("team_id"),
-		CustomExportOptionsPlistContent: os.Getenv("custom_export_options_plist_content"),
-
-		UseLegacyExport:                     os.Getenv("use_legacy_export"),
-		LegacyExportProvisioningProfileName: os.Getenv("legacy_export_provisioning_profile_name"),
-
-		DeployDir:  os.Getenv("BITRISE_DEPLOY_DIR"),
-		VerboseLog: os.Getenv("verbose_log"),
-	}
-}
-
-func (configs ConfigsModel) print() {
-	log.Infof("Configs:")
-	log.Printf("- ArchivePath: %s", configs.ArchivePath)
-	log.Printf("- ExportMethod: %s", configs.ExportMethod)
-	if configs.ExportMethod == "auto-detect" {
-		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
-		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
-		fmt.Println()
-	}
-	log.Printf("- UploadBitcode: %s", configs.UploadBitcode)
-	log.Printf("- CompileBitcode: %s", configs.CompileBitcode)
-	log.Printf("- TeamID: %s", configs.TeamID)
-
-	log.Infof("Experimental Configs:")
-	log.Printf("- UseLegacyExport: %s", configs.UseLegacyExport)
-	log.Printf("- LegacyExportProvisioningProfileName: %s", configs.LegacyExportProvisioningProfileName)
-	log.Printf("- CustomExportOptionsPlistContent:")
-	if configs.CustomExportOptionsPlistContent != "" {
-		fmt.Println(configs.CustomExportOptionsPlistContent)
-	}
-
-	log.Infof("Other Configs:")
-	log.Printf("- DeployDir: %s", configs.DeployDir)
-	log.Printf("- VerboseLog: %s", configs.VerboseLog)
-}
-
-func (configs ConfigsModel) validate() error {
-	if configs.ArchivePath == "" {
-		return errors.New("no ArchivePath specified")
-	}
-
-	if exist, err := pathutil.IsPathExists(configs.ArchivePath); err != nil {
-		return fmt.Errorf("failed to check if ArchivePath exist at: %s, error: %s", configs.ArchivePath, err)
-	} else if !exist {
-		return fmt.Errorf("ArchivePath not exist at: %s", configs.ArchivePath)
-	}
-
-	if configs.ExportMethod == "" {
-		return errors.New("no ExportMethod specified")
-	}
-	if configs.UploadBitcode == "" {
-		return errors.New("no UploadBitcode specified")
-	}
-	if configs.CompileBitcode == "" {
-		return errors.New("no CompileBitcode specified")
-	}
-
-	if configs.UseLegacyExport == "" {
-		return errors.New("no UseLegacyExport specified")
-	}
-
-	return nil
+	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
+	VerboseLog string `env:"verbose_log,opt[yes,no]"`
 }
 
 func fail(format string, v ...interface{}) {
@@ -383,16 +312,35 @@ func generateExportOptionsPlist(exportMethodStr, teamID string, uploadBitcode, c
 }
 
 func main() {
-	configs := createConfigsModelFromEnvs()
-
-	fmt.Println()
-	configs.print()
-
-	if err := configs.validate(); err != nil {
+	var configs ConfigsModel
+	if err := stepconf.Parse(&configs); err != nil {
 		fail("Issue with input: %s", err)
 	}
-
+	stepconf.Print(configs)
+	fmt.Println()
 	log.SetEnableDebugLog(configs.VerboseLog == "yes")
+
+	if configs.ExportMethod == "auto-detect" {
+		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
+		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
+		fmt.Println()
+	}
+
+	// Validate CustomExportOptionsPlistContent
+	customExportOptionsPlistContent := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
+	if customExportOptionsPlistContent != configs.CustomExportOptionsPlistContent {
+		log.Warnf("CustomExportOptionsPlistContent is stripped of leading and trailing white space.")
+		log.Printf(customExportOptionsPlistContent)
+		fmt.Println()
+	}
+	if customExportOptionsPlistContent != "" {
+		var options map[string]interface{}
+		if _, err := plist.Unmarshal([]byte(configs.CustomExportOptionsPlistContent), &options); err != nil {
+			fail("issue with input CustomExportOptionsPlistContent: " + err.Error())
+		}
+	}
+
+	log.Infof("Step determined configs:")
 
 	xcodebuildVersion, err := utility.GetXcodeVersion()
 	if err != nil {
@@ -402,14 +350,6 @@ func main() {
 
 	if xcodebuildVersion.MajorVersion >= 9 && configs.UseLegacyExport == "yes" {
 		fail("Legacy export method (using '-exportFormat ipa' flag) is not supported from Xcode version 9")
-	}
-
-	// Validation CustomExportOptionsPlistContent
-	customExportOptionsPlistContent := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
-	if customExportOptionsPlistContent != configs.CustomExportOptionsPlistContent {
-		fmt.Println()
-		log.Warnf("CustomExportOptionsPlistContent is stripped to remove spaces and new lines:")
-		log.Printf(customExportOptionsPlistContent)
 	}
 
 	archiveExt := filepath.Ext(configs.ArchivePath)
