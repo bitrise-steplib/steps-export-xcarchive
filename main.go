@@ -32,7 +32,7 @@ const (
 
 // Config ...
 type Config struct {
-	ArchivePath string `env:"archive_path,file"`
+	ArchivePath string `env:"archive_path,dir"`
 
 	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
 	UploadBitcode                   bool   `env:"upload_bitcode,opt[yes,no]"`
@@ -47,7 +47,7 @@ type Config struct {
 	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
 }
 
-func (configs Config) validate() error {
+func (configs *Config) validate() error {
 	if configs.ExportMethod == "auto-detect" {
 		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
 		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
@@ -347,12 +347,12 @@ func main() {
 	if err := stepconf.Parse(&configs); err != nil {
 		fail("Issue with input: %s", err)
 	}
+	stepconf.Print(configs)
+	fmt.Println()
 	if err := configs.validate(); err != nil {
 		fail("Issue with input: %s", err)
 	}
 
-	stepconf.Print(configs)
-	fmt.Println()
 	log.SetEnableDebugLog(configs.VerboseLog)
 
 	log.Infof("Step determined configs:")
