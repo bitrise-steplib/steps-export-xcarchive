@@ -35,16 +35,16 @@ type ConfigsModel struct {
 	ArchivePath string `env:"archive_path,file"`
 
 	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
-	UploadBitcode                   string `env:"upload_bitcode,opt[yes,no]"`
-	CompileBitcode                  string `env:"compile_bitcode,opt[yes,no]"`
+	UploadBitcode                   bool   `env:"upload_bitcode,opt[yes,no]"`
+	CompileBitcode                  bool   `env:"compile_bitcode,opt[yes,no]"`
 	TeamID                          string `env:"team_id"`
 	CustomExportOptionsPlistContent string `env:"custom_export_options_plist_content"`
 
-	UseLegacyExport                     string `env:"use_legacy_export,opt[yes,no]"`
+	UseLegacyExport                     bool   `env:"use_legacy_export,opt[yes,no]"`
 	LegacyExportProvisioningProfileName string `env:"legacy_export_provisioning_profile_name"` // Unused
 
 	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
-	VerboseLog string `env:"verbose_log,opt[yes,no]"`
+	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
 }
 
 func fail(format string, v ...interface{}) {
@@ -318,7 +318,7 @@ func main() {
 	}
 	stepconf.Print(configs)
 	fmt.Println()
-	log.SetEnableDebugLog(configs.VerboseLog == "yes")
+	log.SetEnableDebugLog(configs.VerboseLog)
 
 	if configs.ExportMethod == "auto-detect" {
 		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
@@ -348,7 +348,7 @@ func main() {
 	}
 	log.Printf("- xcodebuildVersion: %s (%s)", xcodebuildVersion.Version, xcodebuildVersion.BuildVersion)
 
-	if xcodebuildVersion.MajorVersion >= 9 && configs.UseLegacyExport == "yes" {
+	if xcodebuildVersion.MajorVersion >= 9 && configs.UseLegacyExport {
 		fail("Legacy export method (using '-exportFormat ipa' flag) is not supported from Xcode version 9")
 	}
 
@@ -386,7 +386,7 @@ func main() {
 	log.Printf("xcode managed profile: %v", archiveCodeSignIsXcodeManaged)
 	fmt.Println()
 
-	if xcodebuildVersion.MajorVersion <= 6 || configs.UseLegacyExport == "yes" {
+	if xcodebuildVersion.MajorVersion <= 6 || configs.UseLegacyExport {
 		log.Infof("Using legacy export method...")
 
 		legacyExportCmd := xcodebuild.NewLegacyExportCommand()
@@ -412,7 +412,7 @@ func main() {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
-			exportOptionsContent, err := generateExportOptionsPlist(configs.ExportMethod, configs.TeamID, configs.UploadBitcode == "yes", configs.CompileBitcode == "yes", xcodebuildVersion.MajorVersion, archive)
+			exportOptionsContent, err := generateExportOptionsPlist(configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
 			if err != nil {
 				fail("Failed to generate export options, error: %s", err)
 			}
