@@ -1,15 +1,15 @@
-format_version: 8
+format_version: 6
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
+app:
+  envs:
+  - RELEASE_VERSION: 1.0.1
+  - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
+
 workflows:
+  # ----------------------------------------------------------------
+  # --- Workflows for testing
   test:
-    envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-artifacts.git
-    - BRANCH: TOOL-1060
-    # Used for _tmp dir path
-    - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
-    before_run:
-    - audit-this-step
     steps:
     - go-list:
     - golint:
@@ -31,16 +31,54 @@ workflows:
 
   test_xamarin:
     envs:
-    - BITRISE_XCARCHIVE_PATH: ""
+    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git
+    - BRANCH: developer_profile
+    - BITRISE_PROJECT_PATH: Multiplatform.sln
+    - BITRISE_XAMARIN_CONFIGURATION: Release
+    - BITRISE_XAMARIN_PLATFORM: iPhone
     - LEGACY: "no"
     before_run: 
     - _common_prepare
     after_run:
     - _common_test
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+
+            if [[ -z "${SAMPLE_APP_URL}" ]]; then
+            echo "error: there is no SAMPLE_APP_URL env var specified"
+            exit 1
+            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
+            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
+            exit 1
+            fi
+
+            git init
+            git remote add origin "${SAMPLE_APP_URL}" 
+            git fetch || exit 1
+
+            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
+    - nuget-restore:
+        inputs:
+        - nuget_version: ""
+    - xamarin-archive:
+        inputs:
+        - project_type_whitelist: ios
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   test_xcode:
     envs:
-    - BITRISE_XCARCHIVE_PATH: "./archives/export-xcarchive"
+    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-ios-multi-target.git
+    - COMMIT: "ab36ed563bbc3125118e9f27df91474822dc0d46"
+    - BITRISE_PROJECT_PATH: code-sign-test.xcodeproj
+    - BITRISE_SCHEME: code-sign-test
+    - FORCE_TEAM_ID: 72SA8V3WYL
+    - FORCE_CODE_SIGN_IDENTITY: "iPhone Developer: Bitrise Bot"
     - LEGACY: "no"
     - PLIST: |-
         <?xml version="1.0" encoding="UTF-8"?>
@@ -86,6 +124,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
+
             if [[ -z "${SAMPLE_APP_URL}" ]]; then
             echo "error: there is no SAMPLE_APP_URL env var specified"
             exit 1
@@ -99,36 +138,15 @@ workflows:
             git fetch || exit 1
 
             [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-
-  test_xcode_bitcode:
-    envs:
-    - BITRISE_XCARCHIVE_PATH: "./archives/export-xcarchive"
-    - LEGACY: "no"
-    - PLIST: ""
-    - COMPILE_BITCODE: "no"
-    - UPLOAD_BITCODE: "yes"
-    before_run: 
-    - _common_prepare
-    after_run:
-    - _common_test
-    steps:
-    - script:
+    - xcode-archive:
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
+        - force_team_id: $FORCE_TEAM_ID
+        - force_code_sign_identity: $FORCE_CODE_SIGN_IDENTITY
+        - output_tool: xcodebuild
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   test_xcode_7:
     envs:
@@ -177,6 +195,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
+
             if [[ -z "${SAMPLE_APP_URL}" ]]; then
             echo "error: there is no SAMPLE_APP_URL env var specified"
             exit 1
@@ -202,7 +221,10 @@ workflows:
 
   test_tvos:
     envs:
-    - BITRISE_XCARCHIVE_PATH: "./archives/export-xcarchive"
+    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-tvos-swift.git
+    - BRANCH: "master"
+    - BITRISE_PROJECT_PATH: NPO Live.xcworkspace
+    - BITRISE_SCHEME: NPO Live
     - LEGACY: "no"
     - PLIST: |-
         <?xml version="1.0" encoding="UTF-8"?>
@@ -232,6 +254,8 @@ workflows:
             	<string>&lt;none&gt;</string>
             </dict>
         </plist>
+
+
     before_run: 
     - _common_prepare
     after_run:
@@ -241,6 +265,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
+
             if [[ -z "${SAMPLE_APP_URL}" ]]; then
             echo "error: there is no SAMPLE_APP_URL env var specified"
             exit 1
@@ -254,6 +279,13 @@ workflows:
             git fetch || exit 1
 
             [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
+    - xcode-archive:
+        inputs:
+        - output_tool: xcodebuild
+    - script:
+        title: ""
+        inputs:
+        - content: rm "$BITRISE_IPA_PATH"
 
   _common_prepare:
     steps:
@@ -279,8 +311,6 @@ workflows:
         inputs:
         - use_legacy_export: $LEGACY
         - custom_export_options_plist_content: $PLIST
-        - compile_bitcode: $COMPILE_BITCODE
-        - upload_bitcode: $UPLOAD_BITCODE
     - script:
         title: Output Test
         inputs:
@@ -289,158 +319,6 @@ workflows:
             echo "BITRISE_DSYM_PATH: $BITRISE_DSYM_PATH"
             rm "$BITRISE_IPA_PATH"
             rm "$BITRISE_DSYM_PATH"
-
-  _common_build_archive_artifact:
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            set -ex
-            rm -rf "$ORIG_BITRISE_SOURCE_DIR/_tmp"
-            mkdir -p "$ORIG_BITRISE_SOURCE_DIR/_tmp"
-    - change-workdir:
-        title: Switch working dir to _tmp dir
-        run_if: true
-        inputs:
-        - path: "$ORIG_BITRISE_SOURCE_DIR/_tmp"
-        - is_create_path: true
-    - certificate-and-profile-installer:
-  
-
-  create_test_artifacts:
-    envs:
-    # Used for _tmp dir path
-    - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
-    after_run:
-    - create_archive_artifact_xamarin
-    - create_archive_artifact_xcode
-    - create_archive_artifact_tvos
-
-  create_archive_artifact_xamarin:
-    envs:
-    # Archive params
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git
-    - BRANCH: master
-    - BITRISE_PROJECT_PATH: Multiplatform.sln
-    - BITRISE_XAMARIN_CONFIGURATION: Release
-    - BITRISE_XAMARIN_PLATFORM: iPhone
-    before_run: 
-    - _common_build_archive_artifact
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - nuget-restore:
-        inputs:
-        - nuget_version: ""
-    - xamarin-archive:
-        inputs:
-        - project_type_whitelist: ios
-    - script:
-        title: ""
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-
-            rm "${BITRISE_IPA_PATH}"
-            echo "Created archive: ${BITRISE_XCARCHIVE_PATH}"
-
-  create_archive_artifact_xcode:
-    envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-ios-multi-target.git
-    - COMMIT: "ab36ed563bbc3125118e9f27df91474822dc0d46"
-    - BITRISE_PROJECT_PATH: code-sign-test.xcodeproj
-    - BITRISE_SCHEME: code-sign-test
-    - FORCE_TEAM_ID: 72SA8V3WYL
-    - FORCE_CODE_SIGN_IDENTITY: "iPhone Developer: Bitrise Bot"
-    before_run: 
-    - _common_build_archive_artifact
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - xcode-archive:
-        inputs:
-        - force_team_id: $FORCE_TEAM_ID
-        - force_code_sign_identity: $FORCE_CODE_SIGN_IDENTITY
-        - output_tool: xcodebuild
-    - script:
-        title: ""
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            rm "${BITRISE_IPA_PATH}"
-            echo "Created archive: ${BITRISE_XCARCHIVE_PATH}"
-
-  create_archive_artifact_tvos:
-    envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-tvos-swift.git
-    - BRANCH: "master"
-    - BITRISE_PROJECT_PATH: NPO Live.xcworkspace
-    - BITRISE_SCHEME: NPO Live
-    before_run: 
-    - _common_build_archive_artifact
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - xcode-archive:
-        inputs:
-        - output_tool: xcodebuild
-    - script:
-        title: ""
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            rm "${BITRISE_IPA_PATH}"
-            echo "Created archive: ${BITRISE_XCARCHIVE_PATH}"
-
 
   # ----------------------------------------------------------------
   # --- Utility workflows
