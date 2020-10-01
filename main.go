@@ -30,14 +30,36 @@ const (
 	bitriseIDEDistributionLogsPthEnvKey = "BITRISE_IDEDISTRIBUTION_LOGS_PATH"
 )
 
+const (
+	// ExportProductApp ...
+	ExportProductApp ExportProduct = "app"
+	// ExportProductAppClip ...
+	ExportProductAppClip ExportProduct = "app-clip"
+)
+
+// ExportProduct ...
+type ExportProduct string
+
+// ParseExportProduct ...
+func ParseExportProduct(product string) (ExportProduct, error) {
+	switch product {
+	case "app":
+		return ExportProductApp, nil
+	case "app-clip":
+		return ExportProductAppClip, nil
+	default:
+		return ExportProduct(""), fmt.Errorf("unkown method (%s)", product)
+	}
+}
+
 // Config ...
 type Config struct {
-	ArchivePath string `env:"archive_path,dir"`
-
+	ArchivePath                     string `env:"archive_path,dir"`
 	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
 	UploadBitcode                   bool   `env:"upload_bitcode,opt[yes,no]"`
 	CompileBitcode                  bool   `env:"compile_bitcode,opt[yes,no]"`
 	TeamID                          string `env:"team_id"`
+	ProductToDistribute             string `env:"product,opt[app,app-clip]"`
 	CustomExportOptionsPlistContent string `env:"custom_export_options_plist_content"`
 
 	UseLegacyExport bool `env:"use_legacy_export,opt[yes,no]"`
@@ -100,14 +122,24 @@ func findIDEDistrubutionLogsPath(output string) (string, error) {
 	return "", nil
 }
 
-func generateExportOptionsPlist(exportMethodStr, teamID string, uploadBitcode, compileBitcode bool, xcodebuildMajorVersion int64, archive xcarchive.IosArchive) (string, error) {
+func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, teamID string, uploadBitcode, compileBitcode bool, xcodebuildMajorVersion int64, archive xcarchive.IosArchive) (string, error) {
 	log.Printf("Generating export options")
 
+	var productBundleID string
 	var exportMethod exportoptions.Method
 	exportTeamID := ""
 	exportCodeSignIdentity := ""
 	exportProfileMapping := map[string]string{}
 	exportCodeSignStyle := ""
+
+	switch exportProduct {
+	case ExportProductApp:
+		productBundleID = archive.Application.BundleIdentifier()
+		break
+	case ExportProductAppClip:
+		productBundleID = archive.Application.ClipApplication.BundleIdentifier()
+		break
+	}
 
 	if exportMethodStr == "auto-detect" {
 		log.Printf("auto-detect export method specified")
@@ -320,6 +352,7 @@ func generateExportOptionsPlist(exportMethodStr, teamID string, uploadBitcode, c
 	} else {
 		options := exportoptions.NewNonAppStoreOptions(exportMethod)
 		options.CompileBitcode = compileBitcode
+		options.DistributionBundleIdentifier = productBundleID
 
 		if xcodebuildMajorVersion >= 9 {
 			options.BundleIDProvisioningProfileMapping = exportProfileMapping
@@ -426,7 +459,8 @@ func main() {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
-			exportOptionsContent, err := generateExportOptionsPlist(configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
+			productToDistribute, _ := ParseExportProduct(configs.ProductToDistribute)
+			exportOptionsContent, err := generateExportOptionsPlist(productToDistribute, configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
 			if err != nil {
 				fail("Failed to generate export options, error: %s", err)
 			}
