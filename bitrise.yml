@@ -78,7 +78,6 @@ workflows:
     - BITRISE_PROJECT_PATH: code-sign-test.xcodeproj
     - BITRISE_SCHEME: code-sign-test
     - FORCE_TEAM_ID: 72SA8V3WYL
-    - FORCE_CODE_SIGN_IDENTITY: "iPhone Developer: Bitrise Bot"
     - LEGACY: "no"
     - PLIST: |-
         <?xml version="1.0" encoding="UTF-8"?>
@@ -141,7 +140,6 @@ workflows:
     - xcode-archive:
         inputs:
         - force_team_id: $FORCE_TEAM_ID
-        - force_code_sign_identity: $FORCE_CODE_SIGN_IDENTITY
         - output_tool: xcodebuild
     - script:
         title: ""
@@ -154,7 +152,6 @@ workflows:
     - COMMIT: "65cd120bf4459c2881cfe2b731395b4efc53855d"
     - BITRISE_PROJECT_PATH: ios-simple-objc/ios-simple-objc.xcodeproj
     - BITRISE_SCHEME: ios-simple-objc
-    - FORCE_CODE_SIGN_IDENTITY: "iPhone Developer: Bitrise Bot"
     - FORCE_TEAM_ID: 72SA8V3WYL
     - LEGACY: "no"
     - PLIST: |-
@@ -212,7 +209,6 @@ workflows:
     - xcode-archive:
         inputs:
         - force_team_id: $FORCE_TEAM_ID
-        - force_code_sign_identity: $FORCE_CODE_SIGN_IDENTITY
         - output_tool: xcodebuild
     - script:
         title: ""
