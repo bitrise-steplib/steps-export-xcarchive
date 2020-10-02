@@ -102,7 +102,7 @@ workflows:
             		<string>Bitrise development - (com.bitrise.code-sign-test.watchkitapp.watchkitextension)</string>
             	</dict>
             	<key>signingCertificate</key>
-            	<string>iPhone Developer: Bitrise Bot (VV2J4SV8V4)</string>
+            	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
             	<key>signingStyle</key>
             	<string>manual</string>
             	<key>stripSwiftSymbols</key>
@@ -171,7 +171,7 @@ workflows:
             		<string>BitriseBot-Wildcard</string>
             	</dict>
             	<key>signingCertificate</key>
-            	<string>iPhone Developer: Bitrise Bot</string>
+            	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
             	<key>signingStyle</key>
             	<string>manual</string>
             	<key>stripSwiftSymbols</key>
@@ -239,7 +239,7 @@ workflows:
             		<string>Bitrise development - (bdh.NPO-Live.bitrise.sample)</string>
             	</dict>
             	<key>signingCertificate</key>
-            	<string>iPhone Developer: Bitrise Bot</string>
+            	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
             	<key>signingStyle</key>
             	<string>manual</string>
             	<key>stripSwiftSymbols</key>
