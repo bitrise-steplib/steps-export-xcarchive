@@ -459,7 +459,11 @@ func main() {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
-			productToDistribute, _ := ParseExportProduct(configs.ProductToDistribute)
+			productToDistribute, err := ParseExportProduct(configs.ProductToDistribute)
+			if err != nil {
+				fail("Failed to parse export product option, error: %s", err)
+			}
+
 			exportOptionsContent, err := generateExportOptionsPlist(productToDistribute, configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
 			if err != nil {
 				fail("Failed to generate export options, error: %s", err)
