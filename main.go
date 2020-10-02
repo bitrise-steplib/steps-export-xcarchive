@@ -137,6 +137,9 @@ func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, te
 		productBundleID = archive.Application.BundleIdentifier()
 		break
 	case ExportProductAppClip:
+		if archive.Application.ClipApplication == nil {
+			fail("Failed to export App Clip, error: xcarchive does not contain an App Clip")
+		}
 		productBundleID = archive.Application.ClipApplication.BundleIdentifier()
 		break
 	}
@@ -379,6 +382,12 @@ func main() {
 	if err := stepconf.Parse(&configs); err != nil {
 		fail("Issue with input: %s", err)
 	}
+
+	productToDistribute, err := ParseExportProduct(configs.ProductToDistribute)
+	if err != nil {
+		fail("Failed to parse export product option, error: %s", err)
+	}
+
 	stepconf.Print(configs)
 	fmt.Println()
 	if err := configs.validate(); err != nil {
@@ -459,11 +468,6 @@ func main() {
 				fail("Failed to write export options to file, error: %s", err)
 			}
 		} else {
-			productToDistribute, err := ParseExportProduct(configs.ProductToDistribute)
-			if err != nil {
-				fail("Failed to parse export product option, error: %s", err)
-			}
-
 			exportOptionsContent, err := generateExportOptionsPlist(productToDistribute, configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
 			if err != nil {
 				fail("Failed to generate export options, error: %s", err)
