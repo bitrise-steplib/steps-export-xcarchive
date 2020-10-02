@@ -32,7 +32,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6c57e2f6b8f8b091f0b0301dc8e2009154a3784edb24afffbc770f44087236b8"
+  digest = "1:7c6146c3c3abe7b2393f352edb9efefb695e0d61f7666edf0f8af2ddf70dfa3f"
   name = "github.com/bitrise-io/go-xcode"
   packages = [
     "certificateutil",
@@ -46,7 +46,7 @@
     "xcodebuild",
   ]
   pruneopts = "UT"
-  revision = "4f50762fd715b79a51183e49878be04d1413f798"
+  revision = "7d05f87f6e9c9004759304ae8c3f3c90ea9c3bd4"
 
 [[projects]]
   branch = "master"
@@ -70,7 +70,7 @@
   name = "github.com/bitrise-steplib/steps-xcode-archive"
   packages = ["utils"]
   pruneopts = "UT"
-  revision = "b4a7b47f68336e9d096105251a4746eda571a2de"
+  revision = "ba19fe16cdb0d8ee3a7ea8be5e8c5b65037acf2a"
 
 [[projects]]
   branch = "master"
