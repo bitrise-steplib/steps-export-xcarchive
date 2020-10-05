@@ -137,9 +137,6 @@ func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, te
 		productBundleID = archive.Application.BundleIdentifier()
 		break
 	case ExportProductAppClip:
-		if archive.Application.ClipApplication == nil {
-			fail("Failed to export App Clip, error: xcarchive does not contain an App Clip")
-		}
 		productBundleID = archive.Application.ClipApplication.BundleIdentifier()
 		break
 	}
@@ -433,6 +430,10 @@ func main() {
 	mainApplication := archive.Application
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
+
+	if productToDistribute == ExportProductAppClip && archive.Application.ClipApplication == nil {
+		fail("Failed to export App Clip, error: xcarchive does not contain an App Clip")
+	}
 
 	fmt.Println()
 	log.Infof("Archive infos:")
