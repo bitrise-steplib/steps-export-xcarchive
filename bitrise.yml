@@ -32,7 +32,7 @@ workflows:
   test_xamarin:
     envs:
     - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-xamarin-cross-platform.git
-    - BRANCH: developer_profile
+    - BRANCH: master
     - BITRISE_PROJECT_PATH: Multiplatform.sln
     - BITRISE_XAMARIN_CONFIGURATION: Release
     - BITRISE_XAMARIN_PLATFORM: iPhone
