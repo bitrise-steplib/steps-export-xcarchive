@@ -93,13 +93,13 @@ workflows:
             	<key>provisioningProfiles</key>
             	<dict>
             		<key>com.bitrise.code-sign-test</key>
-            		<string>Bitrise development - (com.bitrise.code-sign-test)</string>
+            		<string>BitriseBot-Wildcard</string>
             		<key>com.bitrise.code-sign-test.share-extension</key>
-            		<string>Bitrise development - (com.bitrise.code-sign-test.share-extension)</string>
+            		<string>BitriseBot-Wildcard</string>
             		<key>com.bitrise.code-sign-test.watchkitapp</key>
-            		<string>Bitrise development - (com.bitrise.code-sign-test.watchkitapp)</string>
+            		<string>BitriseBot-Wildcard</string>
             		<key>com.bitrise.code-sign-test.watchkitapp.watchkitextension</key>
-            		<string>Bitrise development - (com.bitrise.code-sign-test.watchkitapp.watchkitextension)</string>
+            		<string>BitriseBot-Wildcard</string>
             	</dict>
             	<key>signingCertificate</key>
             	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
@@ -236,7 +236,7 @@ workflows:
             	<key>provisioningProfiles</key>
             	<dict>
             		<key>bdh.NPO-Live.bitrise.sample</key>
-            		<string>Bitrise development - (bdh.NPO-Live.bitrise.sample)</string>
+            		<string>BitriseBot-Wildcard</string>
             	</dict>
             	<key>signingCertificate</key>
             	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
