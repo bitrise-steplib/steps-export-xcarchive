@@ -236,7 +236,7 @@ workflows:
             	<key>provisioningProfiles</key>
             	<dict>
             		<key>bdh.NPO-Live.bitrise.sample</key>
-            		<string>BitriseBot-Wildcard</string>
+            		<string>WildcardTVOS</string>
             	</dict>
             	<key>signingCertificate</key>
             	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
