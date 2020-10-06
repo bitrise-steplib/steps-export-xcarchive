@@ -352,7 +352,10 @@ func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, te
 	} else {
 		options := exportoptions.NewNonAppStoreOptions(exportMethod)
 		options.CompileBitcode = compileBitcode
-		options.DistributionBundleIdentifier = productBundleID
+
+		if xcodebuildMajorVersion >= 12 {
+			options.DistributionBundleIdentifier = productBundleID
+		}
 
 		if xcodebuildMajorVersion >= 9 {
 			options.BundleIDProvisioningProfileMapping = exportProfileMapping
@@ -431,8 +434,14 @@ func main() {
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
 
-	if productToDistribute == ExportProductAppClip && archive.Application.ClipApplication == nil {
-		fail("Failed to export App Clip, error: xcarchive does not contain an App Clip")
+	if productToDistribute == ExportProductAppClip {
+		if xcodebuildVersion.MajorVersion < 12 {
+			fail("Exporting an App Clip requires Xcode 12 or a later version")
+		}
+
+		if archive.Application.ClipApplication == nil {
+			fail("Failed to export App Clip, error: xcarchive does not contain an App Clip")
+		}
 	}
 
 	fmt.Println()
