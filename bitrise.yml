@@ -5,6 +5,8 @@ app:
   envs:
   - RELEASE_VERSION: 1.0.1
   - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
+  - SAMPLE_ARTIFACTS_URL: https://github.com/bitrise-io/sample-artifacts.git
+  - SAMPLE_ARTIFACTS_BRANCH: "Added-TVOS-xcarchive"
 
 workflows:
   # ----------------------------------------------------------------
@@ -16,18 +18,19 @@ workflows:
     - errcheck:
     - go-test:
     after_run:
-    - test_xamarin
+   # - test_xamarin
     - test_xcode
+    - test_custom_plist
     - test_tvos
 
-  test_legacy:
+  test_xcode12:
     steps:
     - go-list:
     - golint:
     - errcheck:
     - go-test:
     after_run:
-    - test_xcode_7
+    - test_appclip
 
   test_xamarin:
     envs:
@@ -73,12 +76,23 @@ workflows:
 
   test_xcode:
     envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-ios-multi-target.git
-    - COMMIT: "ab36ed563bbc3125118e9f27df91474822dc0d46"
-    - BITRISE_PROJECT_PATH: code-sign-test.xcodeproj
-    - BITRISE_SCHEME: code-sign-test
-    - FORCE_TEAM_ID: 72SA8V3WYL
+    - SAMPLE_APP_URL: $SAMPLE_ARTIFACTS_URL
+    - BRANCH: $SAMPLE_ARTIFACTS_BRANCH
     - LEGACY: "no"
+    - PRODUCT: "app"
+    - BITRISE_XCARCHIVE_PATH: "./archives/ios.xcarchive"
+    before_run: 
+    - _common_prepare
+    - _common_clone
+    - _common_test
+
+  test_custom_plist:
+    envs:
+    - SAMPLE_APP_URL: $SAMPLE_ARTIFACTS_URL
+    - BRANCH: $SAMPLE_ARTIFACTS_BRANCH
+    - LEGACY: "no"
+    - PRODUCT: "app"
+    - BITRISE_XCARCHIVE_PATH: "./archives/ios.xcarchive"
     - PLIST: |-
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -116,146 +130,34 @@ workflows:
 
     before_run: 
     - _common_prepare
-    after_run:
+    - _common_clone
     - _common_test
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - xcode-archive:
-        inputs:
-        - force_team_id: $FORCE_TEAM_ID
-        - output_tool: xcodebuild
-    - script:
-        title: ""
-        inputs:
-        - content: rm "$BITRISE_IPA_PATH"
-
-  test_xcode_7:
-    envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
-    - COMMIT: "65cd120bf4459c2881cfe2b731395b4efc53855d"
-    - BITRISE_PROJECT_PATH: ios-simple-objc/ios-simple-objc.xcodeproj
-    - BITRISE_SCHEME: ios-simple-objc
-    - FORCE_TEAM_ID: 72SA8V3WYL
-    - LEGACY: "no"
-    - PLIST: |-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-            <dict>
-            	<key>compileBitcode</key>
-            	<false/>
-            	<key>destination</key>
-            	<string>export</string>
-            	<key>method</key>
-            	<string>development</string>
-            	<key>provisioningProfiles</key>
-            	<dict>
-            		<key>Bitrise.ios-simple-objc</key>
-            		<string>BitriseBot-Wildcard</string>
-            	</dict>
-            	<key>signingCertificate</key>
-            	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
-            	<key>signingStyle</key>
-            	<string>manual</string>
-            	<key>stripSwiftSymbols</key>
-            	<true/>
-            	<key>teamID</key>
-            	<string>72SA8V3WYL</string>
-            	<key>thinning</key>
-            	<string>&lt;none&gt;</string>
-            </dict>
-        </plist>
-
-    before_run: 
-    - _common_prepare
-    after_run:
-    - _common_test
-    steps:
-    - script:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-
-            if [[ -z "${SAMPLE_APP_URL}" ]]; then
-            echo "error: there is no SAMPLE_APP_URL env var specified"
-            exit 1
-            elif [[ -z "${COMMIT}" && -z "${BRANCH}" ]]; then
-            echo "error: can't checkout: there is no BRANCH or COMMIT env var specified"
-            exit 1
-            fi
-
-            git init
-            git remote add origin "${SAMPLE_APP_URL}" 
-            git fetch || exit 1
-
-            [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - xcode-archive:
-        inputs:
-        - force_team_id: $FORCE_TEAM_ID
-        - output_tool: xcodebuild
-    - script:
-        title: ""
-        inputs:
-        - content: rm "$BITRISE_IPA_PATH"
 
   test_tvos:
     envs:
-    - SAMPLE_APP_URL: https://github.com/bitrise-samples/sample-apps-tvos-swift.git
-    - BRANCH: "master"
-    - BITRISE_PROJECT_PATH: NPO Live.xcworkspace
-    - BITRISE_SCHEME: NPO Live
+    - SAMPLE_APP_URL: $SAMPLE_ARTIFACTS_URL
+    - BRANCH: $SAMPLE_ARTIFACTS_BRANCH
     - LEGACY: "no"
-    - PLIST: |-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-            <dict>
-            	<key>compileBitcode</key>
-            	<false/>
-            	<key>destination</key>
-            	<string>export</string>
-            	<key>method</key>
-            	<string>development</string>
-            	<key>provisioningProfiles</key>
-            	<dict>
-            		<key>bdh.NPO-Live.bitrise.sample</key>
-            		<string>WildcardTVOS</string>
-            	</dict>
-            	<key>signingCertificate</key>
-            	<string>iPhone Developer: Dev Portal Bot Bitrise (E89JV3W9K4)</string>
-            	<key>signingStyle</key>
-            	<string>manual</string>
-            	<key>stripSwiftSymbols</key>
-            	<false/>
-            	<key>teamID</key>
-            	<string>72SA8V3WYL</string>
-            	<key>thinning</key>
-            	<string>&lt;none&gt;</string>
-            </dict>
-        </plist>
-
-
+    - PRODUCT: "app"
+    - BITRISE_XCARCHIVE_PATH: "./archives/TVOS.xcarchive"
     before_run: 
     - _common_prepare
-    after_run:
+    - _common_clone
     - _common_test
+
+  test_appclip:
+    envs:
+    - SAMPLE_APP_URL: $SAMPLE_ARTIFACTS_URL
+    - BRANCH: $SAMPLE_ARTIFACTS_BRANCH
+    - LEGACY: "no"
+    - PRODUCT: "app-clip"
+    - BITRISE_XCARCHIVE_PATH: "./archives/Fruta.xcarchive"
+    before_run: 
+    - _common_prepare
+    - _common_clone
+    - _common_test
+
+  _common_clone:
     steps:
     - script:
         inputs:
@@ -275,13 +177,6 @@ workflows:
             git fetch || exit 1
 
             [[ -n "${COMMIT}" ]] && git checkout "${COMMIT}" || git checkout "${BRANCH}"
-    - xcode-archive:
-        inputs:
-        - output_tool: xcodebuild
-    - script:
-        title: ""
-        inputs:
-        - content: rm "$BITRISE_IPA_PATH"
 
   _common_prepare:
     steps:
@@ -307,6 +202,7 @@ workflows:
         inputs:
         - use_legacy_export: $LEGACY
         - custom_export_options_plist_content: $PLIST
+        - product: $PRODUCT
     - script:
         title: Output Test
         inputs:
