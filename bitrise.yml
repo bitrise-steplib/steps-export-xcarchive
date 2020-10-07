@@ -18,10 +18,10 @@ workflows:
     - errcheck:
     - go-test:
     after_run:
-   # - test_xamarin
     - test_xcode
-    - test_custom_plist
     - test_tvos
+    - test_custom_plist
+    - test_xamarin
 
   test_xcode12:
     steps:
@@ -81,7 +81,7 @@ workflows:
     - LEGACY: "no"
     - PRODUCT: "app"
     - BITRISE_XCARCHIVE_PATH: "./archives/ios.xcarchive"
-    before_run: 
+    after_run: 
     - _common_prepare
     - _common_clone
     - _common_test
@@ -128,7 +128,7 @@ workflows:
             </dict>
         </plist>
 
-    before_run: 
+    after_run: 
     - _common_prepare
     - _common_clone
     - _common_test
@@ -140,7 +140,7 @@ workflows:
     - LEGACY: "no"
     - PRODUCT: "app"
     - BITRISE_XCARCHIVE_PATH: "./archives/TVOS.xcarchive"
-    before_run: 
+    after_run: 
     - _common_prepare
     - _common_clone
     - _common_test
@@ -152,7 +152,7 @@ workflows:
     - LEGACY: "no"
     - PRODUCT: "app-clip"
     - BITRISE_XCARCHIVE_PATH: "./archives/Fruta.xcarchive"
-    before_run: 
+    after_run: 
     - _common_prepare
     - _common_clone
     - _common_test
