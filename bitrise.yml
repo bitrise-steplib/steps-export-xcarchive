@@ -201,6 +201,7 @@ workflows:
         title: Step Test - Export Options
         inputs:
         - use_legacy_export: $LEGACY
+        - export_method: development
         - custom_export_options_plist_content: $PLIST
         - product: $PRODUCT
     - script:
