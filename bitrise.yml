@@ -19,7 +19,6 @@ workflows:
     - go-test:
     after_run:
     - test_xcode
-    - test_tvos
     - test_custom_plist
     - test_xamarin
 
@@ -31,6 +30,7 @@ workflows:
     - go-test:
     after_run:
     - test_appclip
+    - test_tvos
 
   test_xamarin:
     envs:
