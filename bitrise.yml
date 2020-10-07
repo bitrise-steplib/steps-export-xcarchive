@@ -18,9 +18,9 @@ workflows:
     - errcheck:
     - go-test:
     after_run:
+    - test_xamarin
     - test_xcode
     - test_custom_plist
-    - test_xamarin
 
   test_xcode12:
     steps:
