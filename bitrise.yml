@@ -43,6 +43,15 @@ app:
       </plist>
 
 workflows:
+  #usual go checks
+  _common_go_checks:
+    steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test:
+
+
   # Make sure to start with a clean setup
   # Remove _tmp, switch workdir and install certs
   _common_prepare:
@@ -90,10 +99,6 @@ workflows:
   # test on pre Xcode 12 
   test_legacy:
     steps:
-    - go-list:
-    - golint:
-    - errcheck:
-    - go-test:
     - path::./:
         title: Step Test - iOS archive
         inputs:
@@ -106,6 +111,7 @@ workflows:
         - archive_path: "./archives/ios.xcarchive"
         - custom_export_options_plist_content: $CUSTOM_PLIST
     before_run:
+    - _common_go_checks
     - _common_prepare
     - _common_clone
     after_run:
@@ -114,10 +120,6 @@ workflows:
   # test on Xcode 12
   test:
     steps:
-    - go-list:
-    - golint:
-    - errcheck:
-    - go-test:
     - path::./:
         title: Step Test - iOS archive
         inputs:
@@ -141,6 +143,7 @@ workflows:
         - archive_path: "./archives/Fruta.xcarchive"
         - product: "app-clip"
     before_run:
+    - _common_go_checks
     - _common_prepare
     - _common_clone
     after_run:
