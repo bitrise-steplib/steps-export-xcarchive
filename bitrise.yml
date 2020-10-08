@@ -146,8 +146,6 @@ workflows:
     - _common_go_checks
     - _common_prepare
     - _common_clone
-    after_run:
-    - test_xamarin
 
   test_xamarin:
     envs:
