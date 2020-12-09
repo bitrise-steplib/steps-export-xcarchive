@@ -11,20 +11,15 @@ host_os_tags:
   - osx-10.10
 project_type_tags:
   - ios
-  - xamarin
+  - cordova
+  - ionic
   - react-native
+  - flutter
+  - xamarin
 type_tags:
   - utility
-is_requires_admin_user: true
 is_always_run: false
 is_skippable: false
-run_if: ""
-deps:
-  brew:
-  - name: go
-  apt_get:
-  - name: golang
-    bin_name: go
 toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-export-xcarchive
@@ -90,6 +85,17 @@ inputs:
         Format example:
 
         - `1MZX23ABCD4`
+  - product: "app"
+    opts:
+      title: "Select a product to distribute"
+      summary: ""
+      description: |-
+        Describes which product to export.   
+        Possible options are App or App Clip.
+      value_options:
+      - "app"
+      - "app-clip"
+      is_required: true
   - custom_export_options_plist_content:
     opts:
       title: "Custom export options plist content"
@@ -113,17 +119,12 @@ inputs:
       title: Use legacy ipa export method?
       description: |-
         If this input is set to `yes`, step will use legacy ipa export method.
+
+        The embedded provisining profile will be used.
       value_options:
       - "yes"
       - "no"
       is_required: true
-  - legacy_export_provisioning_profile_name:
-    opts:
-      title: Specify Provisioning Profile name to use by export
-      description: |-
-        This input will be used if `use_legacy_export` is set to `"yes"`.
-
-        If this input is empty, the step will use the embedded provisining profile.
   - verbose_log: "yes"
     opts:
       category: Debug
