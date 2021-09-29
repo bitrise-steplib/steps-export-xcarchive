@@ -4,6 +4,29 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 workflows:
   sample:
     steps:
+    - script:
+        title: Clean _tmp dir
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            rm -rf ./_tmp
+    - change-workdir:
+        title: Switch working dir to _tmp
+        inputs:
+        - path: ./_tmp
+        - is_create_path: true
+    - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git@master:
+        title: Clone sample app
+        inputs:
+        - repository_url: https://github.com/bitrise-io/sample-artifacts.git
+        - clone_into_dir: .
+        - branch: master
+    - path::./:
+        title: Step Test - iOS archive
+        inputs:
+        - export_method: development
+        - archive_path: ./archives/ios.xcarchive
 
   check:
     steps:
@@ -19,6 +42,5 @@ workflows:
     steps:
     - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main:
         inputs:
-        # optional
-#        - contrib_section: docs/contribution.md
-#        - example_section: docs/examples.md
+        - contrib_section: docs/contribution.md
+        - example_section: docs/examples.md
