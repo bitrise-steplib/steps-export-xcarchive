@@ -46,7 +46,7 @@ app:
       </plist>
 
 workflows:
-  test:
+  test_ipa_exports:
     before_run:
     - _setup
     steps:
