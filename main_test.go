@@ -48,7 +48,7 @@ func TestConfig_validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			configs := &Config{
 				ArchivePath:                     tt.fields.ArchivePath,
-				ExportMethod:                    tt.fields.ExportMethod,
+				DistributionMethod:              tt.fields.ExportMethod,
 				UploadBitcode:                   tt.fields.UploadBitcode,
 				CompileBitcode:                  tt.fields.CompileBitcode,
 				TeamID:                          tt.fields.TeamID,
@@ -58,7 +58,7 @@ func TestConfig_validate(t *testing.T) {
 			}
 			wantConfigs := &Config{
 				ArchivePath:                     tt.want.ArchivePath,
-				ExportMethod:                    tt.want.ExportMethod,
+				DistributionMethod:              tt.want.ExportMethod,
 				UploadBitcode:                   tt.want.UploadBitcode,
 				CompileBitcode:                  tt.want.CompileBitcode,
 				TeamID:                          tt.want.TeamID,

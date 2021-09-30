@@ -55,7 +55,7 @@ func ParseExportProduct(product string) (ExportProduct, error) {
 // Config ...
 type Config struct {
 	ArchivePath                     string `env:"archive_path,dir"`
-	ExportMethod                    string `env:"export_method,opt[auto-detect,app-store,ad-hoc,enterprise,development]"`
+	DistributionMethod              string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
 	UploadBitcode                   bool   `env:"upload_bitcode,opt[yes,no]"`
 	CompileBitcode                  bool   `env:"compile_bitcode,opt[yes,no]"`
 	TeamID                          string `env:"team_id"`
@@ -67,12 +67,6 @@ type Config struct {
 }
 
 func (configs *Config) validate() error {
-	if configs.ExportMethod == "auto-detect" {
-		exportMethods := []exportoptions.Method{exportoptions.MethodAppStore, exportoptions.MethodAdHoc, exportoptions.MethodEnterprise, exportoptions.MethodDevelopment}
-		log.Warnf("  Export method: auto-detect is DEPRECATED, use a direct export method %s", exportMethods)
-		fmt.Println()
-	}
-
 	// Validate CustomExportOptionsPlistContent
 	trimmedExportOptions := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
 	if configs.CustomExportOptionsPlistContent != trimmedExportOptions {
@@ -139,19 +133,12 @@ func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, te
 		break
 	}
 
-	if exportMethodStr == "auto-detect" {
-		log.Printf("auto-detect export method specified")
-		exportMethod = archive.Application.ProvisioningProfile.ExportType
-
-		log.Printf("using the archive profile's export method: %s", exportMethod)
-	} else {
-		parsedMethod, err := exportoptions.ParseMethod(exportMethodStr)
-		if err != nil {
-			fail("Failed to parse export options, error: %s", err)
-		}
-		exportMethod = parsedMethod
-		log.Printf("export-method specified: %s", exportMethodStr)
+	parsedMethod, err := exportoptions.ParseMethod(exportMethodStr)
+	if err != nil {
+		fail("Failed to parse export options, error: %s", err)
 	}
+	exportMethod = parsedMethod
+	log.Printf("export-method specified: %s", exportMethodStr)
 
 	if xcodebuildMajorVersion >= 9 {
 		log.Printf("xcode major version > 9, generating provisioningProfiles node")
@@ -398,7 +385,7 @@ func main() {
 
 	xcodebuildVersion, err := utility.GetXcodeVersion()
 	if err != nil {
-		fail("Failed to determin xcode version, error: %s", err)
+		fail("Failed to determine Xcode version, error: %s", err)
 	}
 	log.Printf("- xcodebuildVersion: %s (%s)", xcodebuildVersion.Version, xcodebuildVersion.BuildVersion)
 
@@ -437,11 +424,11 @@ func main() {
 	}
 
 	fmt.Println()
-	log.Infof("Archive infos:")
+	log.Infof("Archive info:")
 	log.Printf("team: %s (%s)", mainApplication.ProvisioningProfile.TeamName, mainApplication.ProvisioningProfile.TeamID)
 	log.Printf("profile: %s (%s)", mainApplication.ProvisioningProfile.Name, mainApplication.ProvisioningProfile.UUID)
 	log.Printf("export: %s", archiveExportMethod)
-	log.Printf("xcode managed profile: %v", archiveCodeSignIsXcodeManaged)
+	log.Printf("Xcode managed profile: %v", archiveCodeSignIsXcodeManaged)
 	fmt.Println()
 
 	log.Infof("Exporting with export options...")
@@ -454,7 +441,7 @@ func main() {
 			fail("Failed to write export options to file, error: %s", err)
 		}
 	} else {
-		exportOptionsContent, err := generateExportOptionsPlist(productToDistribute, configs.ExportMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
+		exportOptionsContent, err := generateExportOptionsPlist(productToDistribute, configs.DistributionMethod, configs.TeamID, configs.UploadBitcode, configs.CompileBitcode, xcodebuildVersion.MajorVersion, archive)
 		if err != nil {
 			fail("Failed to generate export options, error: %s", err)
 		}
