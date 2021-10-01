@@ -29,7 +29,7 @@ inputs:
     description: |-
       Specifies the archive that should be exported.
 
-    The input value sets `xcodebuild`’s `-archivePath` option.
+      The input value sets xcodebuild’s '-archivePath' option.
     is_required: true
 
 - product: "app"
@@ -94,7 +94,7 @@ inputs:
       If empty, step generates these options based on the embedded provisioning profile,
       with default values.
 
-      Call `xcodebuild -help` for available export options.
+      Call 'xcodebuild -help' for available export options.
 
 # Debugging
 
