@@ -84,7 +84,7 @@ inputs:
     - "no"
     is_required: true
 
-- custom_export_options_plist_content:
+- export_options_plist_content:
   opts:
     category: IPA export configuration
     title: Export options plist content

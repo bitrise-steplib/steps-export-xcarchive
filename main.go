@@ -48,37 +48,37 @@ func ParseExportProduct(product string) (ExportProduct, error) {
 	case "app-clip":
 		return ExportProductAppClip, nil
 	default:
-		return ExportProduct(""), fmt.Errorf("unkown method (%s)", product)
+		return "", fmt.Errorf("unkown method (%s)", product)
 	}
 }
 
 // Config ...
 type Config struct {
-	ArchivePath                     string `env:"archive_path,dir"`
-	DistributionMethod              string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
-	UploadBitcode                   bool   `env:"upload_bitcode,opt[yes,no]"`
-	CompileBitcode                  bool   `env:"compile_bitcode,opt[yes,no]"`
-	TeamID                          string `env:"team_id"`
-	ProductToDistribute             string `env:"product,opt[app,app-clip]"`
-	CustomExportOptionsPlistContent string `env:"custom_export_options_plist_content"`
+	ArchivePath               string `env:"archive_path,dir"`
+	DistributionMethod        string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
+	UploadBitcode             bool   `env:"upload_bitcode,opt[yes,no]"`
+	CompileBitcode            bool   `env:"compile_bitcode,opt[yes,no]"`
+	TeamID                    string `env:"export_development_team"`
+	ProductToDistribute       string `env:"product,opt[app,app-clip]"`
+	ExportOptionsPlistContent string `env:"export_options_plist_content"`
 
 	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
 	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
 }
 
 func (configs *Config) validate() error {
-	// Validate CustomExportOptionsPlistContent
-	trimmedExportOptions := strings.TrimSpace(configs.CustomExportOptionsPlistContent)
-	if configs.CustomExportOptionsPlistContent != trimmedExportOptions {
-		configs.CustomExportOptionsPlistContent = trimmedExportOptions
-		log.Warnf("CustomExportOptionsPlistContent contains leading and trailing white space, removed:")
-		log.Printf(configs.CustomExportOptionsPlistContent)
+	// Validate ExportOptionsPlistContent
+	trimmedExportOptions := strings.TrimSpace(configs.ExportOptionsPlistContent)
+	if configs.ExportOptionsPlistContent != trimmedExportOptions {
+		configs.ExportOptionsPlistContent = trimmedExportOptions
+		log.Warnf("ExportOptionsPlistContent contains leading and trailing white space, removed:")
+		log.Printf(configs.ExportOptionsPlistContent)
 		fmt.Println()
 	}
-	if configs.CustomExportOptionsPlistContent != "" {
+	if configs.ExportOptionsPlistContent != "" {
 		var options map[string]interface{}
-		if _, err := plist.Unmarshal([]byte(configs.CustomExportOptionsPlistContent), &options); err != nil {
-			return fmt.Errorf("issue with input CustomExportOptionsPlistContent: %s", err.Error())
+		if _, err := plist.Unmarshal([]byte(configs.ExportOptionsPlistContent), &options); err != nil {
+			return fmt.Errorf("issue with input ExportOptionsPlistContent: %s", err.Error())
 		}
 	}
 
@@ -433,11 +433,11 @@ func main() {
 
 	log.Infof("Exporting with export options...")
 
-	if configs.CustomExportOptionsPlistContent != "" {
-		log.Printf("Custom export options content provided, using it:")
-		fmt.Println(configs.CustomExportOptionsPlistContent)
+	if configs.ExportOptionsPlistContent != "" {
+		log.Printf("Export options content provided, using it:")
+		fmt.Println(configs.ExportOptionsPlistContent)
 
-		if err := fileutil.WriteStringToFile(exportOptionsPath, configs.CustomExportOptionsPlistContent); err != nil {
+		if err := fileutil.WriteStringToFile(exportOptionsPath, configs.ExportOptionsPlistContent); err != nil {
 			fail("Failed to write export options to file, error: %s", err)
 		}
 	} else {
