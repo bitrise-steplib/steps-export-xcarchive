@@ -41,7 +41,7 @@ inputs:
     - "app-clip"
     is_required: true
 
-- distribution_method:
+- distribution_method: "development"
   opts:
     title: Distribution method
     summary: Describes how Xcode should export the archive.
@@ -62,7 +62,7 @@ inputs:
     description: |-
       The Developer Portal team to use for this export.
 
-      Format example: '1MZX23ABCD4'
+      Defaults to the team used to build the archive.
 
 - compile_bitcode: "yes"
   opts:
@@ -90,19 +90,17 @@ inputs:
     title: Export options plist content
     summary: Specifies a plist file content that configures archive exporting.
     description: |-
-      Specifies a custom export options plist content that configures archive exporting.
-      If empty, step generates these options based on the embedded provisioning profile,
-      with default values.
+      Specifies a plist file content that configures archive exporting.
 
-      Call 'xcodebuild -help' for available export options.
+      If not specified, the Step will auto-generate it.
 
 # Debugging
 
-- verbose_log: "yes"
+- verbose_log: "no"
   opts:
     category: Debugging
-    title: Enable verbose logging?
-    description: Enable verbose logging?
+    title: Enable verbose logging
+    summary: If this input is set, the Step will print additional logs for debugging.
     is_required: true
     value_options:
     - "yes"
