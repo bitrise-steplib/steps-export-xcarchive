@@ -60,16 +60,17 @@ inputs:
 
 - export_development_team:
   opts:
+    category: "IPA export configuration"
     title: "Developer Portal team"
     summary: "The Developer Portal team to use for this export"
     description: |-
       The Developer Portal team to use for this export.
 
       Format example: `1MZX23ABCD4`
-    category: "IPA export configuration"
 
 - compile_bitcode: "yes"
   opts:
+    category: "IPA export configuration"
     title: "Rebuild from bitcode"
     summary: "For __non-App Store__ exports, should Xcode re-compile the app from bitcode?"
     description: |-
@@ -78,9 +79,10 @@ inputs:
     - "yes"
     - "no"
     is_required: true
-    category: "IPA export configuration"
+
 - upload_bitcode: "yes"
   opts:
+    category: "IPA export configuration"
     title: "Include bitcode"
     summary: "For __App Store__ exports, should the package include bitcode?"
     description: |-
@@ -89,10 +91,10 @@ inputs:
     - "yes"
     - "no"
     is_required: true
-    category: "IPA export configuration"
 
 - custom_export_options_plist_content:
   opts:
+    category: "IPA export configuration"
     title: "Export options plist content"
     summary: "Specifies a plist file content that configures archive exporting."
     description: |-
@@ -101,7 +103,6 @@ inputs:
       with default values.
 
       Call `xcodebuild -help` for available export options.
-    category: "IPA export configuration"
 
 # Debugging
 
