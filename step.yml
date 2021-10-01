@@ -24,10 +24,12 @@ toolkit:
 inputs:
 - archive_path: $BITRISE_XCARCHIVE_PATH
   opts:
-    title: iOS or tvOS archive path
-    summary: iOS or tvOS archive path
+    title: Archive path
+    summary: Specifies the archive that should be exported.
     description: |-
-      Path to the iOS or tvOS archive (.xcarchive) which should be exported.
+      Specifies the archive that should be exported.
+
+    The input value sets `xcodebuild`’s `-archivePath` option.
     is_required: true
 - product: "app"
   opts:
@@ -35,7 +37,6 @@ inputs:
     summary: ""
     description: |-
       Describes which product to export.
-      Possible options are App or App Clip.
     value_options:
     - "app"
     - "app-clip"
@@ -64,7 +65,7 @@ inputs:
 - compile_bitcode: "yes"
   opts:
     title: "Rebuild from bitcode"
-    summary: ""
+    summary: "For __non-App Store__ exports, should Xcode re-compile the app from bitcode?"
     description: |-
       For __non-App Store__ exports, should Xcode re-compile the app from bitcode?
     value_options:
@@ -75,7 +76,7 @@ inputs:
 - upload_bitcode: "yes"
   opts:
     title: "Include bitcode"
-    summary: ""
+    summary: "For __App Store__ exports, should the package include bitcode?"
     description: |-
       For __App Store__ exports, should the package include bitcode?
     value_options:
