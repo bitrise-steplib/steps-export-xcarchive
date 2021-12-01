@@ -22,6 +22,7 @@ import (
 )
 
 const (
+	// Outputs
 	bitriseIPAPthEnvKey                 = "BITRISE_IPA_PATH"
 	bitriseDSYMPthEnvKey                = "BITRISE_DSYM_PATH"
 	bitriseIDEDistributionLogsPthEnvKey = "BITRISE_IDEDISTRIBUTION_LOGS_PATH"
@@ -29,16 +30,28 @@ const (
 
 // Inputs ...
 type Inputs struct {
-	ArchivePath               string `env:"archive_path,dir"`
-	DistributionMethod        string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
-	UploadBitcode             bool   `env:"upload_bitcode,opt[yes,no]"`
-	CompileBitcode            bool   `env:"compile_bitcode,opt[yes,no]"`
+	ArchivePath         string `env:"archive_path,dir"`
+	ProductToDistribute string `env:"product,opt[app,app-clip]"`
+	DistributionMethod  string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
+	// Automatic code signing
+	CodeSigningAuthSource     string          `env:"automatic_code_signing,opt[off,api-key,apple-id]"`
+	CertificateURLList        string          `env:"certificate_url_list"`
+	CertificatePassphraseList stepconf.Secret `env:"passphrase_list"`
+	KeychainPath              string          `env:"keychain_path"`
+	KeychainPassword          stepconf.Secret `env:"keychain_password"`
+	RegisterTestDevices       bool            `env:"register_test_devices,opt[yes,no]"`
+	MinDaysProfileValid       int             `env:"min_profile_validity,required"`
+	BuildURL                  string          `env:"BITRISE_BUILD_URL"`
+	BuildAPIToken             stepconf.Secret `env:"BITRISE_BUILD_API_TOKEN"`
+	// IPA export configuration
 	TeamID                    string `env:"export_development_team"`
-	ProductToDistribute       string `env:"product,opt[app,app-clip]"`
+	CompileBitcode            bool   `env:"compile_bitcode,opt[yes,no]"`
+	UploadBitcode             bool   `env:"upload_bitcode,opt[yes,no]"`
 	ExportOptionsPlistContent string `env:"export_options_plist_content"`
-
-	DeployDir  string `env:"BITRISE_DEPLOY_DIR"`
-	VerboseLog bool   `env:"verbose_log,opt[yes,no]"`
+	// Debugging
+	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
+	// Output export
+	DeployDir string `env:"BITRISE_DEPLOY_DIR"`
 }
 
 type Config struct {
