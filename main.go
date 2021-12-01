@@ -577,15 +577,15 @@ func (s Step) ExportOutput(opts ExportOpts) error {
 
 	if len(opts.AppDSYMs) == 0 {
 		log.Warnf("No dSYM was found in the archive")
-
-	} else {
-		dsymZipPath := filepath.Join(opts.DeployDir, opts.ArchiveName+".dSYM.zip")
-		if err := output.ZipAndExportOutput(opts.AppDSYMs, dsymZipPath, bitriseDSYMPthEnvKey); err != nil {
-			return fmt.Errorf("failed to export %s, error: %s", bitriseDSYMPthEnvKey, err)
-		}
-
-		log.Donef("The dSYM zip path is now available in the Environment Variable: %s (value: %s)", bitriseDSYMPthEnvKey, dsymZipPath)
+		return nil
 	}
+
+	dsymZipPath := filepath.Join(opts.DeployDir, opts.ArchiveName+".dSYM.zip")
+	if err := output.ZipAndExportOutput(opts.AppDSYMs, dsymZipPath, bitriseDSYMPthEnvKey); err != nil {
+		return fmt.Errorf("failed to export %s, error: %s", bitriseDSYMPthEnvKey, err)
+	}
+
+	log.Donef("The dSYM zip path is now available in the Environment Variable: %s (value: %s)", bitriseDSYMPthEnvKey, dsymZipPath)
 
 	return nil
 }
