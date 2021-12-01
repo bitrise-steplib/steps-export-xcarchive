@@ -231,7 +231,9 @@ The logs directory will be stored in $BITRISE_DEPLOY_DIR, and its full path
 will be available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable`)
 		}
 
-		return RunOut{}, fmt.Errorf("export failed, error: %s", err)
+		return RunOut{
+			IDEDistrubutionLogDir: ideDistrubutionLogDir,
+		}, fmt.Errorf("export failed, error: %s", err)
 	}
 
 	appDSYMs, _, err := archive.FindDSYMs()
@@ -319,17 +321,7 @@ func RunStep() error {
 		return err
 	}
 
-	runOpts := RunOpts{
-		ArchivePath:               config.ArchivePath,
-		DeployDir:                 config.DeployDir,
-		ProductToDistribute:       config.ProductToDistribute,
-		XcodebuildVersion:         config.XcodebuildVersion,
-		ExportOptionsPlistContent: config.ExportOptionsPlistContent,
-		DistributionMethod:        config.DistributionMethod,
-		TeamID:                    config.TeamID,
-		UploadBitcode:             config.UploadBitcode,
-		CompileBitcode:            config.CompileBitcode,
-	}
+	runOpts := RunOpts(config)
 	out, runErr := step.Run(runOpts)
 
 	exportOpts := ExportOpts{
