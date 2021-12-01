@@ -335,6 +335,7 @@ func generateExportOptionsPlist(exportProduct ExportProduct, exportMethodStr, te
 
 type Step struct {
 	commandFactory command.Factory
+	inputParser    stepconf.InputParser
 }
 
 type Config struct {
@@ -350,11 +351,8 @@ type Config struct {
 }
 
 func (s Step) ProcessInputs() (Config, error) {
-	envRepository := env.NewRepository()
-	commandFactory := command.NewFactory(envRepository)
-
 	var inputs Inputs
-	if err := stepconf.NewInputParser(envRepository).Parse(&inputs); err != nil {
+	if err := s.inputParser.Parse(&inputs); err != nil {
 		return Config{}, fmt.Errorf("issue with input: %s", err)
 	}
 
@@ -390,7 +388,7 @@ func (s Step) ProcessInputs() (Config, error) {
 
 	log.Infof("Step determined configs:")
 
-	xcodebuildVersion, err := utility.GetXcodeVersion(commandFactory)
+	xcodebuildVersion, err := utility.GetXcodeVersion(s.commandFactory)
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to determine Xcode version, error: %s", err)
 	}
@@ -422,9 +420,10 @@ type RunOpts struct {
 }
 
 type RunOut struct {
-	TmpDir      string
-	AppDSYMs    []string
-	ArchiveName string
+	IDEDistrubutionLogDir string
+	TmpDir                string
+	AppDSYMs              []string
+	ArchiveName           string
 }
 
 func (s Step) Run(opts RunOpts) (RunOut, error) {
@@ -432,8 +431,6 @@ func (s Step) Run(opts RunOpts) (RunOut, error) {
 	archiveName := filepath.Base(opts.ArchivePath)
 	archiveName = strings.TrimSuffix(archiveName, archiveExt)
 	exportOptionsPath := filepath.Join(opts.DeployDir, "export_options.plist")
-
-	ideDistributionLogsZipPath := filepath.Join(opts.DeployDir, "xcodebuild.xcdistributionlogs.zip")
 
 	envsToUnset := []string{"GEM_HOME", "GEM_PATH", "RUBYLIB", "RUBYOPT", "BUNDLE_BIN_PATH", "_ORIGINAL_GEM_PATH", "BUNDLE_GEMFILE"}
 	for _, key := range envsToUnset {
@@ -506,16 +503,16 @@ func (s Step) Run(opts RunOpts) (RunOut, error) {
 	log.Donef("$ %s", exportCmd.PrintableCmd())
 	fmt.Println()
 
+	var ideDistrubutionLogDir string
 	if xcodebuildOut, err := exportCmd.RunAndReturnOutput(); err != nil {
 		// xcdistributionlogs
 		if logsDirPth, err := findIDEDistrubutionLogsPath(xcodebuildOut); err != nil {
 			log.Warnf("Failed to find xcdistributionlogs, error: %s", err)
-		} else if err := output.ZipAndExportOutput([]string{logsDirPth}, ideDistributionLogsZipPath, bitriseIDEDistributionLogsPthEnvKey); err != nil {
-			log.Warnf("Failed to export %s, error: %s", bitriseIDEDistributionLogsPthEnvKey, err)
 		} else {
+			ideDistrubutionLogDir = logsDirPth
 			log.Warnf(`If you can't find the reason of the error in the log, please check the xcdistributionlogs
-The logs directory is stored in $BITRISE_DEPLOY_DIR, and its full path
-is available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable`)
+The logs directory will be stored in $BITRISE_DEPLOY_DIR, and its full path
+will be available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable`)
 		}
 
 		return RunOut{}, fmt.Errorf("export failed, error: %s", err)
@@ -527,20 +524,31 @@ is available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable`)
 	}
 
 	return RunOut{
-		TmpDir:      tmpDir,
-		AppDSYMs:    appDSYMs,
-		ArchiveName: archiveName,
+		IDEDistrubutionLogDir: ideDistrubutionLogDir,
+		TmpDir:                tmpDir,
+		AppDSYMs:              appDSYMs,
+		ArchiveName:           archiveName,
 	}, nil
 }
 
 type ExportOpts struct {
-	TmpDir      string
-	DeployDir   string
-	AppDSYMs    []string
-	ArchiveName string
+	IDEDistrubutionLogDir string
+	TmpDir                string
+	DeployDir             string
+	AppDSYMs              []string
+	ArchiveName           string
 }
 
 func (s Step) ExportOutput(opts ExportOpts) error {
+	if opts.IDEDistrubutionLogDir != "" {
+		ideDistributionLogsZipPath := filepath.Join(opts.DeployDir, "xcodebuild.xcdistributionlogs.zip")
+		if err := output.ZipAndExportOutput([]string{opts.IDEDistrubutionLogDir}, ideDistributionLogsZipPath, bitriseIDEDistributionLogsPthEnvKey); err != nil {
+			log.Warnf("Failed to export %s, error: %s", bitriseIDEDistributionLogsPthEnvKey, err)
+		}
+
+		return nil
+	}
+
 	exportedIPAPath := ""
 	pattern := filepath.Join(opts.TmpDir, "*.ipa")
 	ipas, err := filepath.Glob(pattern)
@@ -591,7 +599,12 @@ func (s Step) ExportOutput(opts ExportOpts) error {
 }
 
 func RunStep() error {
-	step := Step{}
+	envRepository := env.NewRepository()
+
+	step := Step{
+		commandFactory: command.NewFactory(envRepository),
+		inputParser:    stepconf.NewInputParser(envRepository),
+	}
 
 	config, err := step.ProcessInputs()
 	if err != nil {
@@ -612,10 +625,11 @@ func RunStep() error {
 	out, runErr := step.Run(runOpts)
 
 	exportOpts := ExportOpts{
-		TmpDir:      out.TmpDir,
-		DeployDir:   config.DeployDir,
-		AppDSYMs:    out.AppDSYMs,
-		ArchiveName: out.ArchiveName,
+		IDEDistrubutionLogDir: out.IDEDistrubutionLogDir,
+		TmpDir:                out.TmpDir,
+		DeployDir:             config.DeployDir,
+		AppDSYMs:              out.AppDSYMs,
+		ArchiveName:           out.ArchiveName,
 	}
 	exportErr := step.ExportOutput(exportOpts)
 
