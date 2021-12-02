@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/bitrise-io/go-steputils v0.0.0-20211126112149-94e32b191a27
 	github.com/bitrise-io/go-utils v0.0.0-20211126092127-3a566ee3f420
-	github.com/bitrise-io/go-xcode v0.0.0-20211126103837-cfbc79491984
+	github.com/bitrise-io/go-xcode v0.0.0-20211202085654-1c04ae3fec4e
 	github.com/bitrise-steplib/steps-xcode-archive v0.0.0-20211125144705-b54f7b0216fd
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06
 )
@@ -19,6 +19,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
+	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
