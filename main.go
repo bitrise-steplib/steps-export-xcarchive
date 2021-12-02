@@ -250,6 +250,38 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 }
 
 func (s Step) Run(opts RunOpts) (RunOut, error) {
+	var authOptions *xcodebuild.AuthenticationParams = nil
+	if opts.CodesignManager != nil {
+		log.Infof("Preparing code signing assets (certificates, profiles) before Archive action")
+
+		xcodebuildAuthParams, err := opts.CodesignManager.PrepareCodesigning()
+		if err != nil {
+			return RunOut{}, fmt.Errorf("failed to manage code signing: %s", err)
+		}
+
+		if xcodebuildAuthParams != nil {
+			privateKey, err := xcodebuildAuthParams.WritePrivateKeyToFile()
+			if err != nil {
+				return RunOut{}, err
+			}
+
+			defer func() {
+				if err := os.Remove(privateKey); err != nil {
+					log.Warnf("failed to remove private key file: %s", err)
+				}
+			}()
+
+			authOptions = &xcodebuild.AuthenticationParams{
+				KeyID:     xcodebuildAuthParams.KeyID,
+				IsssuerID: xcodebuildAuthParams.IssuerID,
+				KeyPath:   privateKey,
+			}
+		}
+	} else {
+		log.Infof("Automatic code signing is disabled, skipped downloading code sign assets")
+	}
+	fmt.Println()
+
 	archiveExt := filepath.Ext(opts.ArchivePath)
 	archiveName := filepath.Base(opts.ArchivePath)
 	archiveName = strings.TrimSuffix(archiveName, archiveExt)
@@ -322,6 +354,9 @@ func (s Step) Run(opts RunOpts) (RunOut, error) {
 	exportCmd.SetArchivePath(opts.ArchivePath)
 	exportCmd.SetExportDir(tmpDir)
 	exportCmd.SetExportOptionsPlist(exportOptionsPath)
+	if authOptions != nil {
+		exportCmd.SetAuthentication(*authOptions)
+	}
 
 	log.Donef("$ %s", exportCmd.PrintableCmd())
 	fmt.Println()
