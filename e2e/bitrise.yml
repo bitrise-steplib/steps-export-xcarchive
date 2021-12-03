@@ -72,7 +72,8 @@ workflows:
     steps:
     - path::./:
         title: Step Test - Multi Target xcodebuild auto signing
-        run_if: '{{ enveq "IS_LATEST_STACK_XCODE" "true" }}'
+        run_if: |-
+          {{ enveq "IS_LATEST_STACK_XCODE" "true" }}
         inputs:
         - distribution_method: development
         - archive_path: ./archives/Fruta-managed.xcarchive
