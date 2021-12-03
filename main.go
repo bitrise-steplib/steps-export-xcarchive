@@ -78,19 +78,6 @@ type Config struct {
 	CodesignManager           *codesign.Manager // nil if automatic code signing is "off"
 }
 
-type RunOpts struct {
-	ArchivePath               string
-	DeployDir                 string
-	ProductToDistribute       ExportProduct
-	ExportOptionsPlistContent string
-	DistributionMethod        string
-	TeamID                    string
-	UploadBitcode             bool
-	CompileBitcode            bool
-	XcodebuildVersion         models.XcodebuildVersionModel
-	CodesignManager           *codesign.Manager // nil if automatic code signing is "off"
-}
-
 type RunOut struct {
 	IDEDistrubutionLogDir string
 	TmpDir                string
@@ -249,7 +236,7 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	), nil
 }
 
-func (s Step) Run(opts RunOpts) (RunOut, error) {
+func (s Step) Run(opts Config) (RunOut, error) {
 	var authOptions *xcodebuild.AuthenticationParams = nil
 	if opts.CodesignManager != nil {
 		log.Infof("Preparing code signing assets (certificates, profiles) before Archive action")
@@ -464,8 +451,7 @@ func RunStep() error {
 		return err
 	}
 
-	runOpts := RunOpts(config)
-	out, runErr := step.Run(runOpts)
+	out, runErr := step.Run(config)
 
 	exportOpts := ExportOpts{
 		IDEDistrubutionLogDir: out.IDEDistrubutionLogDir,
