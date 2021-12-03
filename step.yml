@@ -5,8 +5,6 @@ description: |-
 website: https://github.com/bitrise-steplib/steps-export-xcarchive
 source_code_url: https://github.com/bitrise-steplib/steps-export-xcarchive
 support_url: https://github.com/bitrise-steplib/steps-export-xcarchive/issues
-host_os_tags:
-- osx-10.10
 project_type_tags:
 - ios
 - cordova
@@ -81,10 +79,10 @@ inputs:
       If this input is set, the Step will register the known test devices on Bitrise from team members with the Apple Developer Portal.
 
       Note that setting this to yes may cause devices to be registered against your limited quantity of test devices in the Apple Developer Portal, which can only be removed once annually during your renewal window.
-    is_required: true
     value_options:
     - "yes"
     - "no"
+    is_required: true
 
 - min_profile_validity: "0"
   opts:
@@ -197,12 +195,13 @@ inputs:
 outputs:
 - BITRISE_IPA_PATH:
   opts:
-    title: The created iOS or tvOS .ipa file's path.
+    title: iOS or tvOS IPA
+    summary: The created iOS or tvOS .ipa file's path.
 - BITRISE_DSYM_PATH:
   opts:
     title: The created iOS or tvOS .dSYM zip file's path.
-    description: |-
-      Step will collect every dsym (app dsym and framwork dsyms) in a directory, zip it and export the zipped directory path.
+    summary: Step will collect every dsym (app dsym and framwork dsyms) in a directory, zip it and export the zipped directory path.
 - BITRISE_IDEDISTRIBUTION_LOGS_PATH:
   opts:
-    title: Path to the xcdistributionlogs zip
+    title: xcdistributionlogs
+    summary: Path to the xcdistributionlogs zip
