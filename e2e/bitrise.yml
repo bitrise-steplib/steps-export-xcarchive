@@ -4,10 +4,9 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 app:
   envs:
   # secrets
+  - BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
+  - BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
   - BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
-
-  - RELEASE_VERSION: 1.0.1
-  - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
   - SAMPLE_ARTIFACTS_URL: https://github.com/bitrise-io/sample-artifacts.git
   - SAMPLE_ARTIFACTS_BRANCH: master
   - CUSTOM_PLIST: |-
@@ -58,6 +57,8 @@ workflows:
         - product: app
         - automatic_code_signing: api-key
         - min_profile_validity: 30
+        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
     - path::./:
         title: Step Test - TV OS Apple ID auto signing
         inputs:
@@ -65,9 +66,14 @@ workflows:
         - archive_path: ./archives/TVOS.xcarchive
         - min_profile_validity: 30
         - automatic_code_signing: apple-id
+        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
     - certificate-and-profile-installer:
         inputs:
+        - certificate_url: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
         - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
+        - install_defaults: "no"
     - path::./:
         title: Step Test - iOS archive
         inputs:
