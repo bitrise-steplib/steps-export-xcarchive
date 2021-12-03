@@ -77,7 +77,7 @@ workflows:
         inputs:
         - distribution_method: development
         - archive_path: ./archives/Fruta-managed.xcarchive
-        - product: app
+        - product: app-clip
         - automatic_code_signing: api-key
         - min_profile_validity: 30
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
