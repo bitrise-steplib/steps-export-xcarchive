@@ -239,7 +239,7 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 func (s Step) Run(opts Config) (RunOut, error) {
 	var authOptions *xcodebuild.AuthenticationParams = nil
 	if opts.CodesignManager != nil {
-		log.Infof("Preparing code signing assets (certificates, profiles) before Archive action")
+		log.Infof("Preparing code signing assets (certificates, profiles)")
 
 		xcodebuildAuthParams, err := opts.CodesignManager.PrepareCodesigning()
 		if err != nil {
