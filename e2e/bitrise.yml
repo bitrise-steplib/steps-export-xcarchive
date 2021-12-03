@@ -51,6 +51,24 @@ workflows:
     - _setup
     steps:
     - path::./:
+        title: Step Test - Multi Target API Key auto signing
+        inputs:
+        - distribution_method: development
+        - archive_path: ./archives/Fruta.xcarchive
+        - product: app
+        - automatic_code_signing: api-key
+        - min_profile_validity: 30
+    - path::./:
+        title: Step Test - TV OS Apple ID auto signing
+        inputs:
+        - distribution_method: development
+        - archive_path: ./archives/TVOS.xcarchive
+        - min_profile_validity: 30
+        - automatic_code_signing: apple-id
+    - certificate-and-profile-installer:
+        inputs:
+        - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
+    - path::./:
         title: Step Test - iOS archive
         inputs:
         - distribution_method: development
@@ -87,9 +105,6 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
-    - certificate-and-profile-installer:
-        inputs:
-        - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
     - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git@master:
         title: Clone sample app
         inputs:
