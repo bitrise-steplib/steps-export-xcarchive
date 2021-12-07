@@ -174,7 +174,7 @@ inputs:
   opts:
     category: IPA export configuration
     title: Manage version and build number
-    summary: This will change the version and build number of all content in your app. If your app has an invalid number (like one that was used previously, or precedes your current build number), the step provides an option to automatically increment it to a valid number. Step does not work if export options plist content has been set. 
+    summary: This will change the version and build number of all content in your app. If your app has an invalid number (like one that was used previously, or precedes your current build number), the step provides an option to automatically increment it to a valid number. Step does not work if export options plist content has been set.
     value_options:
     - "yes"
     - "no"
