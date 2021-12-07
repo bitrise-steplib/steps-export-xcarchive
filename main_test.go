@@ -69,7 +69,7 @@ func TestConfig_generateExportOptions_plist_updateVersionAndBuildSetToFalse(t *t
 		t.Errorf("generate export options plist error")
 	}
 
-	if strings.Contains(result, "manageAppVersionAndBuildNumber") == false {
+	if xcodebuildVersion.MajorVersion > 12 && strings.Contains(result, "manageAppVersionAndBuildNumber") == false {
 		t.Errorf("plist does not contain manage app version and build number value for method field")
 	}
 }

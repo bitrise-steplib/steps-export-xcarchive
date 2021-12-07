@@ -326,7 +326,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			return RunOut{}, fmt.Errorf("failed to generate export options, error: %s", err)
 		}
 
-		log.Warnf("path %s", exportOptionsPath)
+		log.Debugf("path %s", exportOptionsPath)
 
 		log.Printf("\ngenerated export options content:\n%s", exportOptionsContent)
 
