@@ -67,16 +67,18 @@ type Inputs struct {
 }
 
 type Config struct {
-	ArchivePath               string
-	DeployDir                 string
-	ProductToDistribute       ExportProduct
-	ExportOptionsPlistContent string
-	DistributionMethod        string
-	TeamID                    string
-	UploadBitcode             bool
-	CompileBitcode            bool
-	XcodebuildVersion         models.XcodebuildVersionModel
-	CodesignManager           *codesign.Manager // nil if automatic code signing is "off"
+	ArchivePath                 string
+	DeployDir                   string
+	ProductToDistribute         ExportProduct
+	ExportOptionsPlistContent   string
+	DistributionMethod          string
+	TeamID                      string
+	UploadBitcode               bool
+	CompileBitcode              bool
+	ManageVersionAndBuildNumber bool
+	XcodebuildVersion           models.XcodebuildVersionModel
+	CodesignManager             *codesign.Manager // nil if automatic code signing is "off"
+	VerboseLog                  bool
 }
 
 type RunOut struct {
