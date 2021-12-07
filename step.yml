@@ -201,8 +201,8 @@ inputs:
 - manage_version_and_build_number: "no"
   opts:
     category: IPA export configuration
-    title: Manage version and build number
-    summary: This will change the version and build number of all content in your app. If your app has an invalid number (like one that was used previously, or precedes your current build number), the step provides an option to automatically increment it to a valid number. The step does not work if export options plist content has been set.
+    title: Xcode manage version and build number (App Store Connect)
+    summary: Should Xcode manage the app's build number when uploading to App Store Connect. This will change the version and build numbers of all content in your app only if the is an invalid number (like one that was used previously or precedes your current build number). The input will not work if `export options plist content` input has been set. Default set to No.
     value_options:
     - "yes"
     - "no"
