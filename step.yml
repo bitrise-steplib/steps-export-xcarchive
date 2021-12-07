@@ -1,8 +1,10 @@
 title: Export iOS and tvOS Xcode archive
 summary: Export iOS and tvOS IPA from an existing Xcode archive
 description: |-
-  Manages your code signing assets and exports an IPA from an existing iOS and tvOS `.xcarchive` file. You can add multiple **Export iOS and tvOS Xcode archive** Steps to your Workflows to create multiple different signed .ipa files.
-
+  Exports an IPA from an existing iOS and tvOS `.xcarchive` file. You can add multiple **Export iOS and tvOS Xcode archive** Steps to your Workflows to create multiple different signed .ipa files.
+  In short, the Step:
+  - Logs you into your Apple Developer account based on the [Apple service connection you provide on Bitrise](https://devcenter.bitrise.io/en/accounts/connecting-to-services/apple-services-connection.html). 
+  - Downloads any provisioning profiles needed for your project based on the **Distribution method**.
   ### Configuring the Step
   Before you start:
   - Make sure you have connected your [Apple Service account to Bitrise](https://devcenter.bitrise.io/en/accounts/connecting-to-services/apple-services-connection.html).
@@ -11,8 +13,8 @@ description: |-
 
   To configure the Step:
   1. **Archive Path**: Specifies the archive that should be exported. The input value sets xcodebuild's `-archivePath` option.
-  2. **Select a product to distribute**: Describes which product to export.
-  3. **Distribution method**: Describes how Xcode should export the archive.
+  2. **Select a product to distribute**: Decide if an App or an App Clip IPA should be exported.
+  3. **Distribution method**: Describes how Xcode should export the archive: development, app-store, ad-hoc, or enterprise.
 
   Under **Automatic code signing**:
   1. **Automatic code signing method**: Select the Apple service connection you want to use for code signing. Available options: `off` if you don't do automatic code signing, `api-key` [if you use API key authorization](https://devcenter.bitrise.io/en/accounts/connecting-to-services/connecting-to-an-apple-service-with-api-key.html), and `apple-id` [if you use Apple ID authorization](https://devcenter.bitrise.io/en/accounts/connecting-to-services/connecting-to-an-apple-service-with-apple-id.html).
