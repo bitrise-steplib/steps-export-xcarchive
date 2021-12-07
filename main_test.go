@@ -8,6 +8,7 @@ import (
 	"github.com/bitrise-io/go-utils/env"
 	"github.com/bitrise-io/go-xcode/utility"
 	"github.com/bitrise-io/go-xcode/xcarchive"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConfig_generateExportOptions_plist(t *testing.T) {
@@ -24,6 +25,8 @@ func TestConfig_generateExportOptions_plist(t *testing.T) {
 	if len(result) == 0 {
 		t.Errorf("plist is empty")
 	}
+
+	assert.NotEqual(t, 0, len(result))
 }
 
 func TestConfig_generateExportOptions_plist_validField(t *testing.T) {
@@ -37,21 +40,10 @@ func TestConfig_generateExportOptions_plist_validField(t *testing.T) {
 	result, err := generateExportOptionsPlist("app", "development", "my team id", false, false, xcodebuildVersion.MajorVersion, archive, true)
 
 	// Then
-	if err != nil {
-		t.Errorf("generate export options plist error")
-	}
-
-	if strings.Contains(result, "compileBitcode") == false {
-		t.Errorf("plist does not contain compile bitcode field")
-	}
-
-	if strings.Contains(result, "method") == false {
-		t.Errorf("plist does not contain method field")
-	}
-
-	if strings.Contains(result, "development") == false {
-		t.Errorf("plist does not contain development value for method field")
-	}
+	assert.Nil(t, err)
+	assert.Contains(t, result, "compileBitcode")
+	assert.Contains(t, result, "method")
+	assert.Contains(t, result, "development")
 }
 
 func TestConfig_generateExportOptions_plist_updateVersionAndBuildSetToFalse(t *testing.T) {
@@ -65,9 +57,7 @@ func TestConfig_generateExportOptions_plist_updateVersionAndBuildSetToFalse(t *t
 	result, err := generateExportOptionsPlist("app", "app-store", "my team id", false, false, xcodebuildVersion.MajorVersion, archive, false)
 
 	// Then
-	if err != nil {
-		t.Errorf("generate export options plist error")
-	}
+	assert.Nil(t, err)
 
 	if xcodebuildVersion.MajorVersion > 12 && strings.Contains(result, "manageAppVersionAndBuildNumber") == false {
 		t.Errorf("plist does not contain manage app version and build number value for method field")

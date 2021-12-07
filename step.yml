@@ -206,7 +206,7 @@ inputs:
     value_options:
     - "yes"
     - "no"
-    is_required: false
+    is_required: true
 
 - export_options_plist_content:
   opts:
