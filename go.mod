@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/bitrise-io/go-steputils v0.0.0-20211205220451-e046db274afb
 	github.com/bitrise-io/go-utils v0.0.0-20211126092127-3a566ee3f420
-	github.com/bitrise-io/go-xcode v0.0.0-20211203163621-99a08cd4c73d
+	github.com/bitrise-io/go-xcode v0.0.0-20211209092209-c3c81d943b57
 	github.com/bitrise-steplib/steps-xcode-archive v0.0.0-20211206161837-eb2baab896e6
 	howett.net/plist v1.0.0
 )
