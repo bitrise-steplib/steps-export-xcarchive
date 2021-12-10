@@ -112,7 +112,7 @@ workflows:
         - automatic_code_signing: apple-id
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
         - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
-        - apple_team_id: $TEAM_ID
+        - export_development_team: $TEAM_ID
 
 
   test_ipa_exports:
