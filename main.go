@@ -453,6 +453,7 @@ func RunStep() error {
 
 	config, err := step.ProcessInputs()
 	if err != nil {
+		step.logger.Errorf(err.Error())
 		return err
 	}
 
@@ -468,9 +469,11 @@ func RunStep() error {
 	exportErr := step.ExportOutput(exportOpts)
 
 	if runErr != nil {
+		step.logger.Errorf(runErr.Error())
 		return runErr
 	}
 	if exportErr != nil {
+		step.logger.Errorf(exportErr.Error())
 		return exportErr
 	}
 
@@ -479,7 +482,6 @@ func RunStep() error {
 
 func main() {
 	if err := RunStep(); err != nil {
-		v1log.Errorf(err.Error())
 		os.Exit(1)
 	}
 }
