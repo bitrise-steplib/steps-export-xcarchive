@@ -8,10 +8,9 @@ require (
 	github.com/bitrise-io/go-utils v1.0.1
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.1
 	github.com/bitrise-io/go-xcode v1.0.1
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.7
 	howett.net/plist v1.0.0
 )
-
-require github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.5.0.20220120145426-4f93b92198c6
 
 require (
 	github.com/bitrise-io/go-plist v0.0.0-20210301100253-4b1a112ccd10 // indirect
