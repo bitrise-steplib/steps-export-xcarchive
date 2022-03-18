@@ -8,6 +8,7 @@ app:
   - BITRISE_KEYCHAIN_PASSWORD: $BITRISE_KEYCHAIN_PASSWORD
   - BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
   - BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+  - BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
   - BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
   - SAMPLE_ARTIFACTS_URL: https://github.com/bitrise-io/sample-artifacts.git
   - SAMPLE_ARTIFACTS_BRANCH: master
@@ -125,7 +126,6 @@ workflows:
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
 
-
   test_ipa_exports:
     before_run:
     - _setup
@@ -158,6 +158,35 @@ workflows:
         - distribution_method: development
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
+
+  test_single_certificate_no_passphrase:
+      steps:
+      - script:
+            inputs:
+            - content: |-
+                  #!/bin/bash
+                  set -ex
+                  rm -rf "./_tmp"
+                  mkdir -p "./_tmp"
+      - git::https://github.com/bitrise-steplib/bitrise-step-simple-git-clone.git@master:
+            inputs:
+            - repository_url: https://github.com/bitrise-io/sample-apps-ios-simple-objc.git
+            - branch: bundle_id
+            - clone_into_dir: ./_tmp
+      - path::./:
+            title: Step Test
+            inputs:
+            - apple_service_connection: api-key
+            - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
+            - passphrase_list: ""
+            - distribution_method: development
+            - project_path: ./_tmp/ios-simple-objc/ios-simple-objc.xcodeproj
+            - scheme: ios-simple-objc
+            - configuration: Release
+            - keychain_path: $BITRISE_KEYCHAIN_PATH
+            - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
+            - verbose_log: "yes"
+            - apple_team_id: $TEAM_ID
 
   _setup:
     steps:
