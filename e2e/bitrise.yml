@@ -57,6 +57,16 @@ workflows:
     before_run:
     - _setup
     steps:
+    - script:
+        title: Unset Bitrise API connection env vars
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            envman add --key BITRISE_BUILD_URL_BACKUP --value $BITRISE_BUILD_URL
+            envman add --key BITRISE_BUILD_API_TOKEN_BACKUP --value $BITRISE_BUILD_API_TOKEN
+            envman unset --key BITRISE_BUILD_URL
+            envman unset --key BITRISE_BUILD_API_TOKEN
     - path::./:
         title: Step Test - Multi Target API Key auto signing
         inputs:
@@ -72,6 +82,13 @@ workflows:
         - api_key_path: $BITFALL_APPSTORECONNECT_API_KEY_URL
         - api_key_id: $BITFALL_APPSTORECONNECT_API_KEY_ID
         - api_key_issuer_id: $BITFALL_APPSTORECONNECT_API_KEY_ISSUER_ID
+    - script:
+        title: Restore Bitrise API connection env vars
+        inputs:
+        - content: |-
+            set -ex
+            envman add --key BITRISE_BUILD_URL --value $BITRISE_BUILD_URL_BACKUP
+            envman add --key BITRISE_BUILD_API_TOKEN --value $BITRISE_BUILD_API_TOKEN_BACKUP
 
   test_single_certificate_no_passphrase:
     before_run:
