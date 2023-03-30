@@ -226,7 +226,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
-            
+            echo This is a test
             rm -rf ~/Library/MobileDevice/Provisioning Profiles
     - script:
         title: Clean _tmp dir
