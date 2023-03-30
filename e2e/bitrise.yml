@@ -217,6 +217,7 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
 
+
   _setup:
     steps:
     - script:
