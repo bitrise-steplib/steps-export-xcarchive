@@ -217,7 +217,6 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
 
-
   _setup:
     steps:
     - script:
@@ -227,6 +226,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
+            
             rm -rf ~/Library/MobileDevice/Provisioning Profiles
     - script:
         title: Clean _tmp dir
