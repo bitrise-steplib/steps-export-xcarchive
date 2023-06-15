@@ -246,7 +246,7 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	if inputs.TestDeviceListPath != "" {
 		testDevices, err = devportalservice.ParseTestDevicesFromFile(inputs.TestDeviceListPath, time.Now())
 		if err != nil {
-			s.logger.Warnf("Failed to process device list (%s): %s", inputs.TestDeviceListPath, err)
+			return codesign.Manager{}, fmt.Errorf("failed to process device list (%s): %s", inputs.TestDeviceListPath, err)
 		}
 	} else if serviceConnection != nil {
 		testDevices = serviceConnection.TestDevices
