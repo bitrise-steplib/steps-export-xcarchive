@@ -67,9 +67,10 @@ type Inputs struct {
 	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
 	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
 	// App Store Connect connection override
-	APIKeyPath     stepconf.Secret `env:"api_key_path"`
-	APIKeyID       string          `env:"api_key_id"`
-	APIKeyIssuerID string          `env:"api_key_issuer_id"`
+	APIKeyPath              stepconf.Secret `env:"api_key_path"`
+	APIKeyID                string          `env:"api_key_id"`
+	APIKeyIssuerID          string          `env:"api_key_issuer_id"`
+	APIKeyEnterpriseAccount bool            `env:"api_key_enterprise_account,opt[yes,no]"`
 	// Debugging
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 	// Output export
@@ -225,9 +226,10 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	}
 
 	connectionInputs := codesign.ConnectionOverrideInputs{
-		APIKeyPath:     inputs.APIKeyPath,
-		APIKeyID:       inputs.APIKeyID,
-		APIKeyIssuerID: inputs.APIKeyIssuerID,
+		APIKeyPath:              inputs.APIKeyPath,
+		APIKeyID:                inputs.APIKeyID,
+		APIKeyIssuerID:          inputs.APIKeyIssuerID,
+		APIKeyEnterpriseAccount: inputs.APIKeyEnterpriseAccount,
 	}
 
 	appleAuthCredentials, err := codesign.SelectConnectionCredentials(authType, serviceConnection, connectionInputs, s.logger)
