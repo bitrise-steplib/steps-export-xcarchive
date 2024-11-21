@@ -10,15 +10,14 @@ import (
 	"github.com/bitrise-io/go-steputils/output"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	v1command "github.com/bitrise-io/go-utils/command"
-	"github.com/bitrise-io/go-utils/fileutil"
 	v1log "github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/retry"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
+	"github.com/bitrise-io/go-utils/v2/fileutil"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-utils/v2/retryhttp"
-	"github.com/bitrise-io/go-xcode/devportalservice"
 	"github.com/bitrise-io/go-xcode/models"
 	"github.com/bitrise-io/go-xcode/profileutil"
 	"github.com/bitrise-io/go-xcode/utility"
@@ -28,6 +27,7 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/localcodesignasset"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/profiledownloader"
 	"github.com/bitrise-io/go-xcode/v2/codesign"
+	"github.com/bitrise-io/go-xcode/v2/devportalservice"
 	"github.com/bitrise-io/go-xcode/v2/xcarchive"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
 	"howett.net/plist"
@@ -67,9 +67,10 @@ type Inputs struct {
 	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
 	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
 	// App Store Connect connection override
-	APIKeyPath     stepconf.Secret `env:"api_key_path"`
-	APIKeyID       string          `env:"api_key_id"`
-	APIKeyIssuerID string          `env:"api_key_issuer_id"`
+	APIKeyPath              stepconf.Secret `env:"api_key_path"`
+	APIKeyID                string          `env:"api_key_id"`
+	APIKeyIssuerID          string          `env:"api_key_issuer_id"`
+	APIKeyEnterpriseAccount bool            `env:"api_key_enterprise_account,opt[yes,no]"`
 	// Debugging
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 	// Output export
@@ -110,6 +111,11 @@ type Step struct {
 	commandFactory command.Factory
 	inputParser    stepconf.InputParser
 	logger         log.Logger
+	fileManager    fileutil.FileManager
+}
+
+func NewStep(commandFactory command.Factory, inputParser stepconf.InputParser, logger log.Logger, fileManager fileutil.FileManager) Step {
+	return Step{commandFactory: commandFactory, inputParser: inputParser, logger: logger, fileManager: fileManager}
 }
 
 func (s Step) ProcessInputs() (Config, error) {
@@ -212,7 +218,7 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	archive := codesign.NewArchive(a)
 
 	var serviceConnection *devportalservice.AppleDeveloperConnection = nil
-	devPortalClientFactory := devportalclient.NewFactory(s.logger)
+	devPortalClientFactory := devportalclient.NewFactory(s.logger, s.fileManager)
 	if inputs.BuildURL != "" && inputs.BuildAPIToken != "" {
 		if serviceConnection, err = devPortalClientFactory.CreateBitriseConnection(inputs.BuildURL, string(inputs.BuildAPIToken)); err != nil {
 			return codesign.Manager{}, err
@@ -220,9 +226,10 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	}
 
 	connectionInputs := codesign.ConnectionOverrideInputs{
-		APIKeyPath:     inputs.APIKeyPath,
-		APIKeyID:       inputs.APIKeyID,
-		APIKeyIssuerID: inputs.APIKeyIssuerID,
+		APIKeyPath:              inputs.APIKeyPath,
+		APIKeyID:                inputs.APIKeyID,
+		APIKeyIssuerID:          inputs.APIKeyIssuerID,
+		APIKeyEnterpriseAccount: inputs.APIKeyEnterpriseAccount,
 	}
 
 	appleAuthCredentials, err := codesign.SelectConnectionCredentials(authType, serviceConnection, connectionInputs, s.logger)
@@ -344,7 +351,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 		s.logger.Printf("Export options content provided, using it:")
 		fmt.Println(opts.ExportOptionsPlistContent)
 
-		if err := fileutil.WriteStringToFile(exportOptionsPath, opts.ExportOptionsPlistContent); err != nil {
+		if err := s.fileManager.Write(exportOptionsPath, opts.ExportOptionsPlistContent, 0700); err != nil {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 	} else {
@@ -355,7 +362,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 
 		s.logger.Printf("\ngenerated export options content:\n%s", exportOptionsContent)
 
-		if err := fileutil.WriteStringToFile(exportOptionsPath, exportOptionsContent); err != nil {
+		if err := s.fileManager.Write(exportOptionsPath, exportOptionsContent, 0700); err != nil {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 
@@ -470,11 +477,7 @@ func (s Step) ExportOutput(opts ExportOpts) error {
 func RunStep() error {
 	envRepository := env.NewRepository()
 
-	step := Step{
-		commandFactory: command.NewFactory(envRepository),
-		inputParser:    stepconf.NewInputParser(envRepository),
-		logger:         log.NewLogger(),
-	}
+	step := NewStep(command.NewFactory(envRepository), stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager())
 
 	config, err := step.ProcessInputs()
 	if err != nil {
