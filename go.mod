@@ -9,14 +9,17 @@ require (
 	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.18
 	github.com/bitrise-io/go-utils v1.0.12
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.23
-	github.com/bitrise-io/go-xcode v1.1.1
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.51
+	github.com/bitrise-io/go-xcode v1.1.2
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.54
 	howett.net/plist v1.0.0
 )
 
 require (
 	github.com/bitrise-io/go-pkcs12 v0.0.0-20230815095624-feb898696e02 // indirect
-	golang.org/x/crypto v0.29.0 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
+	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
 )
 
 require (
@@ -32,7 +35,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/text v0.20.0 // indirect
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
