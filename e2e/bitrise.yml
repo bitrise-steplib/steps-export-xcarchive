@@ -101,6 +101,7 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
+        - verbose_log: "yes"
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
         - passphrase_list: ""
         - keychain_path: $BITRISE_KEYCHAIN_PATH
@@ -124,6 +125,7 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
+        - verbose_log: "yes"
         - min_profile_validity: 30
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
         - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
@@ -166,6 +168,7 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
         - automatic_code_signing: api-key
+        - verbose_log: "yes"
         - min_profile_validity: 30
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
         - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
@@ -178,6 +181,7 @@ workflows:
         - archive_path: ./archives/TVOS.xcarchive
         - min_profile_validity: 30
         - automatic_code_signing: apple-id
+        - verbose_log: "yes"
         - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
         - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
         - export_development_team: $TEAM_ID
@@ -199,23 +203,27 @@ workflows:
         inputs:
         - distribution_method: development
         - archive_path: ./archives/ios.xcarchive
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - Custom plist
         inputs:
         - distribution_method: development
         - archive_path: ./archives/ios.xcarchive
         - custom_export_options_plist_content: $CUSTOM_PLIST
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - TV OS
         inputs:
         - distribution_method: development
         - archive_path: ./archives/TVOS.xcarchive
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - App Clip
         inputs:
         - distribution_method: development
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
+        - verbose_log: "yes"
 
   _setup:
     steps:
