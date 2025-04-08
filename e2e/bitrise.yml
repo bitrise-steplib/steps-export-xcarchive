@@ -41,7 +41,7 @@ app:
               <string>BitriseBot-Wildcard</string>
             </dict>
             <key>signingCertificate</key>
-            <string>iPhone Developer: Tooling Bot Bitrise (E89JV3W9K4)</string>
+            <string>Apple Development: Tooling Bot Bitrise (H3RAQJ3F2B)</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>stripSwiftSymbols</key>
@@ -77,8 +77,8 @@ workflows:
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
         - api_key_path: $BITFALL_APPSTORECONNECT_API_KEY_URL
@@ -116,8 +116,8 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
@@ -129,8 +129,8 @@ workflows:
         - automatic_code_signing: api-key
         - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
 
@@ -159,8 +159,8 @@ workflows:
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
@@ -172,8 +172,8 @@ workflows:
         - automatic_code_signing: api-key
         - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
@@ -184,8 +184,8 @@ workflows:
         - min_profile_validity: 30
         - automatic_code_signing: apple-id
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - export_development_team: $TEAM_ID
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
@@ -196,8 +196,8 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
