@@ -6,9 +6,9 @@ app:
   # secrets
   - BITRISE_KEYCHAIN_PATH: $BITRISE_KEYCHAIN_PATH
   - BITRISE_KEYCHAIN_PASSWORD: $BITRISE_KEYCHAIN_PASSWORD
-  - BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-  - BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
-  - BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
+  - BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+  - BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+  - BITFALL_APPLE_APPLE_CERTIFICATE_NOPASSPHRASE_URL: $BITFALL_APPLE_APPLE_CERTIFICATE_NOPASSPHRASE_URL
   - BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
   - BITFALL_APPSTORECONNECT_API_KEY_URL: $BITFALL_APPSTORECONNECT_API_KEY_URL
   - BITFALL_APPSTORECONNECT_API_KEY_ID: $BITFALL_APPSTORECONNECT_API_KEY_ID
@@ -39,7 +39,7 @@ app:
               <string>BitriseBot-Wildcard</string>
             </dict>
             <key>signingCertificate</key>
-            <string>iPhone Developer: Tooling Bot Bitrise (E89JV3W9K4)</string>
+            <string>Apple Development: Tooling Bot Bitrise (H3RAQJ3F2B)</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>stripSwiftSymbols</key>
@@ -75,8 +75,8 @@ workflows:
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
         - api_key_path: $BITFALL_APPSTORECONNECT_API_KEY_URL
@@ -101,7 +101,8 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
+        - verbose_log: "yes"
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_NOPASSPHRASE_URL
         - passphrase_list: ""
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
@@ -113,8 +114,8 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
@@ -124,9 +125,10 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
+        - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
 
@@ -155,8 +157,8 @@ workflows:
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
@@ -166,9 +168,10 @@ workflows:
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
         - automatic_code_signing: api-key
+        - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
@@ -178,8 +181,9 @@ workflows:
         - archive_path: ./archives/TVOS.xcarchive
         - min_profile_validity: 30
         - automatic_code_signing: apple-id
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - verbose_log: "yes"
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - export_development_team: $TEAM_ID
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
@@ -190,8 +194,8 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_IOS_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_IOS_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
@@ -199,23 +203,27 @@ workflows:
         inputs:
         - distribution_method: development
         - archive_path: ./archives/ios.xcarchive
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - Custom plist
         inputs:
         - distribution_method: development
         - archive_path: ./archives/ios.xcarchive
         - custom_export_options_plist_content: $CUSTOM_PLIST
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - TV OS
         inputs:
         - distribution_method: development
         - archive_path: ./archives/TVOS.xcarchive
+        - verbose_log: "yes"
     - path::./:
         title: Step Test - App Clip
         inputs:
         - distribution_method: development
         - archive_path: ./archives/Fruta.xcarchive
         - product: app-clip
+        - verbose_log: "yes"
 
   _setup:
     steps:
