@@ -111,6 +111,8 @@ workflows:
   test_auto_codesign_with_manual_assets:
     before_run:
     - _setup
+    - _backup_api_envs
+    - _invalid_login
     steps:
     - certificate-and-profile-installer:
         inputs:
@@ -129,8 +131,11 @@ workflows:
         - min_profile_validity: 30
         - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
         - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - fallback_provisioning_profile_url_list: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
+    after_run:
+    - _restore_api_envs
 
   test_auto_codesign:
     before_run:
@@ -275,3 +280,44 @@ workflows:
             xcode_major_version=${BASH_REMATCH[1]}
             echo "Xcode major version: $xcode_major_version"
             envman add --key XCODE_MAJOR_VERSION --value $xcode_major_version
+
+  _invalid_login:
+    steps:
+    - script:
+        title: Set invalid login
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            INVALID_BUILD_URL=./_invalid_authinfo
+            echo '{"key_id": "x", "issuer_id": "x", "private_key": "x"}' > $INVALID_BUILD_URL
+
+            BITRISE_BUILD_URL="file://$INVALID_BUILD_URL"
+            BITRISE_BUILD_API_TOKEN="x"
+
+            export BITRISE_BUILD_API_TOKEN
+            export BITRISE_BUILD_API_TOKEN
+            envman add --key BITRISE_BUILD_URL --value $BITRISE_BUILD_URL
+            envman add --key BITRISE_BUILD_API_TOKEN --value $BITRISE_BUILD_API_TOKEN
+
+  _backup_api_envs:
+    steps:
+    - script:
+        title: Backup Bitrise API connection env vars
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            envman add --key BITRISE_BUILD_URL_BACKUP --value $BITRISE_BUILD_URL
+            envman add --key BITRISE_BUILD_API_TOKEN_BACKUP --value $BITRISE_BUILD_API_TOKEN
+
+  _restore_api_envs:
+    steps:
+    - script:
+        title: Restore Bitrise API connection env vars
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            envman add --key BITRISE_BUILD_URL --value $BITRISE_BUILD_URL_BACKUP
+            envman add --key BITRISE_BUILD_API_TOKEN --value $BITRISE_BUILD_API_TOKEN_BACKUP
