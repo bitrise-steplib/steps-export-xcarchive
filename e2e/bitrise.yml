@@ -260,8 +260,6 @@ workflows:
             BITRISE_BUILD_URL="file://$INVALID_BUILD_URL"
             BITRISE_BUILD_API_TOKEN="x"
 
-            export BITRISE_BUILD_API_TOKEN
-            export BITRISE_BUILD_API_TOKEN
             envman add --key BITRISE_BUILD_URL --value $BITRISE_BUILD_URL
             envman add --key BITRISE_BUILD_API_TOKEN --value $BITRISE_BUILD_API_TOKEN
 
