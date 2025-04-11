@@ -49,30 +49,36 @@ type Inputs struct {
 	ArchivePath         string `env:"archive_path,dir"`
 	ProductToDistribute string `env:"product,opt[app,app-clip]"`
 	DistributionMethod  string `env:"distribution_method,opt[development,app-store,ad-hoc,enterprise]"`
+
 	// Automatic code signing
-	CodeSigningAuthSource     string          `env:"automatic_code_signing,opt[off,api-key,apple-id]"`
-	CertificateURLList        string          `env:"certificate_url_list"`
-	CertificatePassphraseList stepconf.Secret `env:"passphrase_list"`
-	KeychainPath              string          `env:"keychain_path"`
-	KeychainPassword          stepconf.Secret `env:"keychain_password"`
-	RegisterTestDevices       bool            `env:"register_test_devices,opt[yes,no]"`
-	TestDeviceListPath        string          `env:"test_device_list_path"`
-	MinDaysProfileValid       int             `env:"min_profile_validity,required"`
-	BuildURL                  string          `env:"BITRISE_BUILD_URL"`
-	BuildAPIToken             stepconf.Secret `env:"BITRISE_BUILD_API_TOKEN"`
+	CodeSigningAuthSource           string          `env:"automatic_code_signing,opt[off,api-key,apple-id]"`
+	CertificateURLList              string          `env:"certificate_url_list"`
+	CertificatePassphraseList       stepconf.Secret `env:"passphrase_list"`
+	KeychainPath                    string          `env:"keychain_path"`
+	KeychainPassword                stepconf.Secret `env:"keychain_password"`
+	RegisterTestDevices             bool            `env:"register_test_devices,opt[yes,no]"`
+	TestDeviceListPath              string          `env:"test_device_list_path"`
+	MinDaysProfileValid             int             `env:"min_profile_validity,required"`
+	BuildURL                        string          `env:"BITRISE_BUILD_URL"`
+	BuildAPIToken                   stepconf.Secret `env:"BITRISE_BUILD_API_TOKEN"`
+	FallbackProvisioningProfileURLs string          `env:"fallback_provisioning_profile_url_list"`
+
 	// IPA export configuration
 	TeamID                      string `env:"export_development_team"`
 	CompileBitcode              bool   `env:"compile_bitcode,opt[yes,no]"`
 	UploadBitcode               bool   `env:"upload_bitcode,opt[yes,no]"`
 	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
 	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
+
 	// App Store Connect connection override
 	APIKeyPath              stepconf.Secret `env:"api_key_path"`
 	APIKeyID                string          `env:"api_key_id"`
 	APIKeyIssuerID          string          `env:"api_key_issuer_id"`
 	APIKeyEnterpriseAccount bool            `env:"api_key_enterprise_account,opt[yes,no]"`
+
 	// Debugging
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
+
 	// Output export
 	DeployDir string `env:"BITRISE_DEPLOY_DIR"`
 }
@@ -198,12 +204,13 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	}
 
 	codesignInputs := codesign.Input{
-		AuthType:                  authType,
-		DistributionMethod:        inputs.DistributionMethod,
-		CertificateURLList:        inputs.CertificateURLList,
-		CertificatePassphraseList: inputs.CertificatePassphraseList,
-		KeychainPath:              inputs.KeychainPath,
-		KeychainPassword:          inputs.KeychainPassword,
+		AuthType:                     authType,
+		DistributionMethod:           inputs.DistributionMethod,
+		CertificateURLList:           inputs.CertificateURLList,
+		CertificatePassphraseList:    inputs.CertificatePassphraseList,
+		KeychainPath:                 inputs.KeychainPath,
+		KeychainPassword:             inputs.KeychainPassword,
+		FallbackProvisioningProfiles: inputs.FallbackProvisioningProfileURLs,
 	}
 
 	codesignConfig, err := codesign.ParseConfig(codesignInputs, s.commandFactory)
