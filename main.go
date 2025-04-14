@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -212,6 +213,9 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 		KeychainPassword:             inputs.KeychainPassword,
 		FallbackProvisioningProfiles: inputs.FallbackProvisioningProfileURLs,
 	}
+
+	bas64FallbackProfiles := base64.StdEncoding.EncodeToString([]byte(inputs.FallbackProvisioningProfileURLs))
+	fmt.Printf("Fallback prof:%v \n", bas64FallbackProfiles)
 
 	codesignConfig, err := codesign.ParseConfig(codesignInputs, s.commandFactory)
 	if err != nil {
