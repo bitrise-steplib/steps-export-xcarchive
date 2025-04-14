@@ -178,6 +178,8 @@ func parseFallbackProvisioningProfiles(profilesList string) ([]string, error) {
 		profiles = splitAndClean(profiles[0], "|", true)
 	}
 
+	fmt.Printf("Profiles: %v\n", profiles)
+
 	var validProfiles []string
 	for _, profile := range profiles {
 		profileURL, err := url.Parse(profile)
@@ -199,6 +201,8 @@ func parseFallbackProvisioningProfiles(profilesList string) ([]string, error) {
 
 		validProfiles = append(validProfiles, profilesInDir...)
 	}
+
+	fmt.Printf("Valid profiles: %v\n", validProfiles)
 
 	return validProfiles, nil
 }
