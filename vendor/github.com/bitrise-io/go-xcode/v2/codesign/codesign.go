@@ -391,7 +391,6 @@ func (m *Manager) prepareCodeSigningWithBitrise(credentials devportalservice.Cre
 	codesignAssetsByDistributionType, err := m.prepareAutomaticAssets(credentials, appLayout, typeToLocalCerts, testDevicesToRegister)
 	if err != nil {
 		if !m.fallbackProfileDownloader.IsAvailable() {
-			m.logger.Warnf("Fallback unavailable, aborting")
 			return err
 		}
 
