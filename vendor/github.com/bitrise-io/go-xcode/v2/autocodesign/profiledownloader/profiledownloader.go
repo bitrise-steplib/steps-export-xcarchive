@@ -28,7 +28,6 @@ func New(profileURLs []string, client *http.Client) autocodesign.ProfileProvider
 
 // IsAvailable returns true if there are available remote profiles to download
 func (d downloader) IsAvailable() bool {
-	fmt.Println("%+v d.URLS", d.urls)
 	return len(d.urls) != 0
 }
 

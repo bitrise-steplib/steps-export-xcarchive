@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,7 +12,6 @@ import (
 	v1command "github.com/bitrise-io/go-utils/command"
 	v1log "github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/bitrise-io/go-utils/retry"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/fileutil"
@@ -214,9 +212,6 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 		FallbackProvisioningProfiles: inputs.FallbackProvisioningProfileURLs,
 	}
 
-	bas64FallbackProfiles := base64.StdEncoding.EncodeToString([]byte(inputs.FallbackProvisioningProfileURLs))
-	fmt.Printf("Fallback prof:%v \n", bas64FallbackProfiles)
-
 	codesignConfig, err := codesign.ParseConfig(codesignInputs, s.commandFactory)
 	if err != nil {
 		return codesign.Manager{}, fmt.Errorf("issue with input: %s", err)
@@ -270,13 +265,14 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 		testDevices = serviceConnection.TestDevices
 	}
 
+	retryClient := retryhttp.NewClient(s.logger).StandardClient()
 	return codesign.NewManagerWithArchive(
 		opts,
 		appleAuthCredentials,
 		testDevices,
 		devPortalClientFactory,
-		certdownloader.NewDownloader(codesignConfig.CertificatesAndPassphrases, retry.NewHTTPClient().StandardClient()),
-		profiledownloader.New([]string{}, retryhttp.NewClient(s.logger).StandardClient()), // not supported for now
+		certdownloader.NewDownloader(codesignConfig.CertificatesAndPassphrases, retryClient),
+		profiledownloader.New(codesignConfig.FallbackProvisioningProfiles, retryClient),
 		codesignasset.NewWriter(codesignConfig.Keychain),
 		localcodesignasset.NewManager(localcodesignasset.NewProvisioningProfileProvider(), localcodesignasset.NewProvisioningProfileConverter()),
 		archive,
