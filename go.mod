@@ -39,3 +39,6 @@ require (
 	golang.org/x/text v0.24.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// override with local path
+replace github.com/bitrise-io/go-xcode/v2 => /Users/lpusok/Develop/go/src/github.com/bitrise-steplib/go-xcode

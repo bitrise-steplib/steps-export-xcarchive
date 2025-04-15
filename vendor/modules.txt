@@ -54,7 +54,7 @@ github.com/bitrise-io/go-xcode/xcodeproject/serialized
 github.com/bitrise-io/go-xcode/xcodeproject/xcodeproj
 github.com/bitrise-io/go-xcode/xcodeproject/xcscheme
 github.com/bitrise-io/go-xcode/xcodeproject/xcworkspace
-# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.56
+# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.56 => /Users/lpusok/Develop/go/src/github.com/bitrise-steplib/go-xcode
 ## explicit; go 1.22
 github.com/bitrise-io/go-xcode/v2/autocodesign
 github.com/bitrise-io/go-xcode/v2/autocodesign/certdownloader
@@ -70,7 +70,9 @@ github.com/bitrise-io/go-xcode/v2/autocodesign/profiledownloader
 github.com/bitrise-io/go-xcode/v2/autocodesign/projectmanager
 github.com/bitrise-io/go-xcode/v2/codesign
 github.com/bitrise-io/go-xcode/v2/devportalservice
+github.com/bitrise-io/go-xcode/v2/exportoptionsgenerator
 github.com/bitrise-io/go-xcode/v2/xcarchive
+github.com/bitrise-io/go-xcode/v2/xcodeversion
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
@@ -128,3 +130,4 @@ gopkg.in/yaml.v3
 # howett.net/plist v1.0.1
 ## explicit; go 1.12
 howett.net/plist
+# github.com/bitrise-io/go-xcode/v2 => /Users/lpusok/Develop/go/src/github.com/bitrise-steplib/go-xcode

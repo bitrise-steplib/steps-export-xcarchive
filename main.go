@@ -17,6 +17,7 @@ import (
 	"github.com/bitrise-io/go-utils/v2/fileutil"
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-utils/v2/retryhttp"
+	"github.com/bitrise-io/go-xcode/exportoptions"
 	"github.com/bitrise-io/go-xcode/models"
 	"github.com/bitrise-io/go-xcode/profileutil"
 	"github.com/bitrise-io/go-xcode/utility"
@@ -27,7 +28,9 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/profiledownloader"
 	"github.com/bitrise-io/go-xcode/v2/codesign"
 	"github.com/bitrise-io/go-xcode/v2/devportalservice"
+	"github.com/bitrise-io/go-xcode/v2/exportoptionsgenerator"
 	"github.com/bitrise-io/go-xcode/v2/xcarchive"
+	"github.com/bitrise-io/go-xcode/v2/xcodeversion"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
 	"howett.net/plist"
 )
@@ -67,7 +70,9 @@ type Inputs struct {
 	CompileBitcode              bool   `env:"compile_bitcode,opt[yes,no]"`
 	UploadBitcode               bool   `env:"upload_bitcode,opt[yes,no]"`
 	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
-	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
+	// ICloudContainerEnvironment    string `env:"icloud_container_environment"`
+	// TestFlightInternalTestingOnly bool   `env:"testflight_internal_testing_only,opt[yes,no]"`
+	ExportOptionsPlistContent string `env:"export_options_plist_content"`
 
 	// App Store Connect connection override
 	APIKeyPath              stepconf.Secret `env:"api_key_path"`
@@ -85,9 +90,9 @@ type Inputs struct {
 type Config struct {
 	ArchivePath                 string
 	DeployDir                   string
-	ProductToDistribute         ExportProduct
+	ProductToDistribute         exportoptionsgenerator.ExportProduct
 	ExportOptionsPlistContent   string
-	DistributionMethod          string
+	DistributionMethod          exportoptions.Method
 	TeamID                      string
 	UploadBitcode               bool
 	CompileBitcode              bool
@@ -113,14 +118,21 @@ type ExportOpts struct {
 }
 
 type Step struct {
-	commandFactory command.Factory
-	inputParser    stepconf.InputParser
-	logger         log.Logger
-	fileManager    fileutil.FileManager
+	commandFactory     command.Factory
+	inputParser        stepconf.InputParser
+	logger             log.Logger
+	fileManager        fileutil.FileManager
+	xcodeVersionReader xcodeversion.Reader
 }
 
-func NewStep(commandFactory command.Factory, inputParser stepconf.InputParser, logger log.Logger, fileManager fileutil.FileManager) Step {
-	return Step{commandFactory: commandFactory, inputParser: inputParser, logger: logger, fileManager: fileManager}
+func NewStep(commandFactory command.Factory, inputParser stepconf.InputParser, logger log.Logger, fileManager fileutil.FileManager, xcodeVersionReader xcodeversion.Reader) Step {
+	return Step{
+		commandFactory:     commandFactory,
+		inputParser:        inputParser,
+		logger:             logger,
+		fileManager:        fileManager,
+		xcodeVersionReader: xcodeVersionReader,
+	}
 }
 
 func (s Step) ProcessInputs() (Config, error) {
@@ -131,6 +143,11 @@ func (s Step) ProcessInputs() (Config, error) {
 
 	v1log.SetEnableDebugLog(inputs.VerboseLog)
 	s.logger.EnableDebugLog(inputs.VerboseLog)
+
+	distributionMethod, err := exportoptions.ParseMethod(inputs.DistributionMethod)
+	if err != nil {
+		return Config{}, fmt.Errorf("issue with input DistributionMethod: %s", err)
+	}
 
 	productToDistribute, err := ParseExportProduct(inputs.ProductToDistribute)
 	if err != nil {
@@ -182,7 +199,7 @@ func (s Step) ProcessInputs() (Config, error) {
 		DeployDir:                 inputs.DeployDir,
 		ProductToDistribute:       productToDistribute,
 		ExportOptionsPlistContent: inputs.ExportOptionsPlistContent,
-		DistributionMethod:        inputs.DistributionMethod,
+		DistributionMethod:        distributionMethod,
 		TeamID:                    inputs.TeamID,
 		UploadBitcode:             inputs.UploadBitcode,
 		CompileBitcode:            inputs.CompileBitcode,
@@ -330,11 +347,13 @@ func (s Step) Run(opts Config) (RunOut, error) {
 		return RunOut{}, fmt.Errorf("failed to parse archive, error: %s", err)
 	}
 
+	exportOptionsGenerator := exportoptionsgenerator.NewWithIosArchive(archive, opts.ProductToDistribute, s.xcodeVersionReader, s.logger)
+
 	mainApplication := archive.Application
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
 
-	if opts.ProductToDistribute == ExportProductAppClip {
+	if opts.ProductToDistribute == exportoptionsgenerator.ExportProductAppClip {
 		if opts.XcodebuildVersion.MajorVersion < 12 {
 			return RunOut{}, fmt.Errorf("exporting an App Clip requires Xcode 12 or a later version")
 		}
@@ -362,14 +381,35 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 	} else {
-		exportOptionsContent, err := generateExportOptionsPlist(opts.ProductToDistribute, opts.DistributionMethod, opts.TeamID, opts.UploadBitcode, opts.CompileBitcode, opts.XcodebuildVersion.MajorVersion, archive, opts.ManageVersionAndBuildNumber)
+		containerEnvironment := ""
+		testFlightInternalTestingOnly := false
+		archivedWithXcodeManagedProfiles := archive.IsXcodeManaged()
+		codesigningStyle := exportoptions.SigningStyleManual
+		if authOptions != nil {
+			codesigningStyle = exportoptions.SigningStyleAutomatic
+		}
+
+		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(
+			opts.DistributionMethod,
+			containerEnvironment,
+			opts.TeamID,
+			opts.UploadBitcode,
+			opts.CompileBitcode,
+			archivedWithXcodeManagedProfiles,
+			codesigningStyle,
+			testFlightInternalTestingOnly,
+		)
 		if err != nil {
 			return RunOut{}, fmt.Errorf("failed to generate export options, error: %s", err)
 		}
 
-		s.logger.Printf("\ngenerated export options content:\n%s", exportOptionsContent)
+		content, err := exportOptions.String()
+		if err != nil {
+			return RunOut{}, fmt.Errorf("failed to generate export options content: %s", err)
+		}
+		s.logger.Printf("\ngenerated export options content:\n%s", content)
 
-		if err := s.fileManager.Write(exportOptionsPath, exportOptionsContent, 0700); err != nil {
+		if err := s.fileManager.Write(exportOptionsPath, content, 0700); err != nil {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 
@@ -483,8 +523,10 @@ func (s Step) ExportOutput(opts ExportOpts) error {
 
 func RunStep() error {
 	envRepository := env.NewRepository()
+	cmdFactory := command.NewFactory(envRepository)
+	xcodeVersionReader := xcodeversion.NewXcodeVersionProvider(cmdFactory)
 
-	step := NewStep(command.NewFactory(envRepository), stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager())
+	step := NewStep(cmdFactory, stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager(), xcodeVersionReader)
 
 	config, err := step.ProcessInputs()
 	if err != nil {
