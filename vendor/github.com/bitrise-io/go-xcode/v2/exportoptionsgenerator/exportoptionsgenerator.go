@@ -21,83 +21,99 @@ const (
 	AppClipProductType = "com.apple.product-type.application.on-demand-install-capable"
 )
 
+// Opts contains options for the exportOptions generator.
+type Opts struct {
+	ContainerEnvironment             string
+	TeamID                           string
+	UploadBitcode                    bool
+	CompileBitcode                   bool
+	ArchivedWithXcodeManagedProfiles bool
+	TestFlightInternalTestingOnly    bool
+	ManageVersionAndBuildNumber      bool
+}
+
 // ExportOptionsGenerator generates an exportOptions.plist file.
 type ExportOptionsGenerator struct {
 	xcodeVersionReader  xcodeversion.Reader
 	certificateProvider CodesignIdentityProvider
 	profileProvider     ProvisioningProfileProvider
-	targetInfoProvider  TargetInfoProvider
+	archiveInfoProvider InfoProvider
 	logger              log.Logger
 }
 
 // New constructs a new ExportOptionsGenerator.
 func New(xcodeProj *xcodeproj.XcodeProj, scheme *xcscheme.Scheme, configuration string, xcodeVersionReader xcodeversion.Reader, logger log.Logger) ExportOptionsGenerator {
 	targetInfoProvider := NewXcodebuildTargetInfoProvider(xcodeProj, scheme, configuration)
-	return NewWithTargetInfoProvider(targetInfoProvider, xcodeVersionReader, logger)
+	return NewWithInfoProvider(targetInfoProvider, xcodeVersionReader, logger)
 }
 
+// NewWithIosArchive constructs a new ExportOptionsGenerator with an xcarchive.
 func NewWithIosArchive(archive xcarchive.IosArchive, productToDistribute ExportProduct, xcodeVersionReader xcodeversion.Reader, logger log.Logger) ExportOptionsGenerator {
-	targetInfoProvider := NewIosArchiveTargetInfoProvider(archive, productToDistribute)
-	return NewWithTargetInfoProvider(targetInfoProvider, xcodeVersionReader, logger)
+	targetInfoProvider := NewIosArchiveInfoProvider(archive, productToDistribute)
+	return NewWithInfoProvider(targetInfoProvider, xcodeVersionReader, logger)
 }
 
-// NewWithTargetInfoProvider constructs a new ExportOptionsGenerator with a custom TargetInfoProvider.
-func NewWithTargetInfoProvider(targetInfoProvider TargetInfoProvider, xcodeVersionReader xcodeversion.Reader, logger log.Logger) ExportOptionsGenerator {
+// NewWithInfoProvider constructs a new ExportOptionsGenerator with a custom InfoProvider.
+func NewWithInfoProvider(infoProvider InfoProvider, xcodeVersionReader xcodeversion.Reader, logger log.Logger) ExportOptionsGenerator {
 	return ExportOptionsGenerator{
 		xcodeVersionReader:  xcodeVersionReader,
 		certificateProvider: LocalCodesignIdentityProvider{},
 		profileProvider:     LocalProvisioningProfileProvider{},
-		targetInfoProvider:  targetInfoProvider,
+		archiveInfoProvider: infoProvider,
 		logger:              logger,
 	}
 }
 
 // GenerateApplicationExportOptions generates exportOptions for an application export.
-func (g ExportOptionsGenerator) GenerateApplicationExportOptions(
-	exportMethod exportoptions.Method,
-	containerEnvironment string,
-	teamID string,
-	uploadBitcode bool,
-	compileBitcode bool,
-	archivedWithXcodeManagedProfiles bool,
-	codeSigningStyle exportoptions.SigningStyle,
-	testFlightInternalTestingOnly bool,
-) (exportoptions.ExportOptions, error) {
+func (g ExportOptionsGenerator) GenerateApplicationExportOptions(exportMethod exportoptions.Method, codeSigningStyle exportoptions.SigningStyle, opts Opts) (exportoptions.ExportOptions, error) {
 	xcodeVersion, err := g.xcodeVersionReader.GetVersion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Xcode version: %w", err)
 	}
 
-	mainTargetBundleID, entitlementsByBundleID, err := g.targetInfoProvider.applicationTargetsAndEntitlements(exportMethod)
+	archiveInfo, err := g.archiveInfoProvider.Read()
 	if err != nil {
 		return nil, err
 	}
 
-	iCloudContainerEnvironment, err := determineIcloudContainerEnvironment(containerEnvironment, entitlementsByBundleID, exportMethod, xcodeVersion.Major)
+	// app-store-connect exports should contain App Clip too, but not other export methods:
+	// ..
+	// <key>provisioningProfiles</key>
+	// <dict>
+	// 	<key>io.bundle.id</key>
+	// 	<string>Development Application Profile</string>
+	// 	<key>io.bundle.id.AppClipID</key>
+	// 	<string>Development App Clip Profile</string>
+	// </dict>
+	// ..
+	for bundleID := range archiveInfo.EntitlementsByBundleID {
+		if bundleID == archiveInfo.AppClipBundleID {
+			if !exportMethod.IsAppStore() && bundleID != archiveInfo.MainBundleID { // do not remove if exporting App Clip
+				g.logger.Debugf("Filtering out App Clip target: %s", bundleID)
+				delete(archiveInfo.EntitlementsByBundleID, bundleID)
+			}
+		}
+	}
+
+	iCloudContainerEnvironment, err := determineIcloudContainerEnvironment(opts.ContainerEnvironment, archiveInfo.EntitlementsByBundleID, exportMethod, xcodeVersion.Major)
 	if err != nil {
 		return nil, err
 	}
 
-	exportOpts := generateBaseExportOptions(exportMethod, xcodeVersion, uploadBitcode, compileBitcode, iCloudContainerEnvironment)
+	exportOpts := generateBaseExportOptions(exportMethod, xcodeVersion, opts.UploadBitcode, opts.CompileBitcode, iCloudContainerEnvironment)
 
 	if xcodeVersion.Major >= 12 {
-		exportOpts = addDistributionBundleIdentifierFromXcode12(exportOpts, mainTargetBundleID)
+		exportOpts = addDistributionBundleIdentifierFromXcode12(exportOpts, archiveInfo.MainBundleID)
 	}
 
-	// if xcodebuildMajorVersion >= 13 {
-	// 	log.Debugf("Setting flag for managing app version and build number")
-
-	// 	options.ManageAppVersion = manageVersionAndBuildNumber
-	// }
-
 	if xcodeVersion.Major >= 13 {
-		exportOpts = disableManagedBuildNumberFromXcode13(exportOpts)
+		exportOpts = addManagedBuildNumberFromXcode13(exportOpts, opts.ManageVersionAndBuildNumber)
 	}
 
 	if codeSigningStyle == exportoptions.SigningStyleAutomatic {
-		exportOpts = addTeamID(exportOpts, teamID)
+		exportOpts = addTeamID(exportOpts, opts.TeamID)
 	} else {
-		codeSignGroup, err := g.determineCodesignGroup(entitlementsByBundleID, exportMethod, teamID, archivedWithXcodeManagedProfiles)
+		codeSignGroup, err := g.determineCodesignGroup(archiveInfo.EntitlementsByBundleID, exportMethod, opts.TeamID, opts.ArchivedWithXcodeManagedProfiles)
 		if err != nil {
 			return nil, err
 		}
@@ -105,12 +121,12 @@ func (g ExportOptionsGenerator) GenerateApplicationExportOptions(
 			return exportOpts, nil
 		}
 
-		exportOpts = addManualSigningFields(exportOpts, codeSignGroup, archivedWithXcodeManagedProfiles, g.logger)
+		exportOpts = addManualSigningFields(exportOpts, codeSignGroup, opts.ArchivedWithXcodeManagedProfiles, g.logger)
 	}
 
 	if xcodeVersion.Major >= 15 {
-		if testFlightInternalTestingOnly {
-			exportOpts = addTestFlightInternalTestingOnly(exportOpts, testFlightInternalTestingOnly)
+		if opts.TestFlightInternalTestingOnly {
+			exportOpts = addTestFlightInternalTestingOnly(exportOpts, opts.TestFlightInternalTestingOnly)
 		}
 	}
 
@@ -350,10 +366,10 @@ func addDistributionBundleIdentifierFromXcode12(exportOpts exportoptions.ExportO
 	return nil
 }
 
-func disableManagedBuildNumberFromXcode13(exportOpts exportoptions.ExportOptions) exportoptions.ExportOptions {
+func addManagedBuildNumberFromXcode13(exportOpts exportoptions.ExportOptions, isManageAppVersion bool) exportoptions.ExportOptions {
 	switch options := exportOpts.(type) {
 	case exportoptions.AppStoreOptionsModel:
-		options.ManageAppVersion = false // Only available for app-store exports
+		options.ManageAppVersion = isManageAppVersion // Only available for app-store exports
 
 		return options
 	}

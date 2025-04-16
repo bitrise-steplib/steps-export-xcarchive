@@ -18,9 +18,7 @@ import (
 	"github.com/bitrise-io/go-utils/v2/log"
 	"github.com/bitrise-io/go-utils/v2/retryhttp"
 	"github.com/bitrise-io/go-xcode/exportoptions"
-	"github.com/bitrise-io/go-xcode/models"
 	"github.com/bitrise-io/go-xcode/profileutil"
-	"github.com/bitrise-io/go-xcode/utility"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/certdownloader"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/codesignasset"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/devportalclient"
@@ -70,9 +68,7 @@ type Inputs struct {
 	CompileBitcode              bool   `env:"compile_bitcode,opt[yes,no]"`
 	UploadBitcode               bool   `env:"upload_bitcode,opt[yes,no]"`
 	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
-	// ICloudContainerEnvironment    string `env:"icloud_container_environment"`
-	// TestFlightInternalTestingOnly bool   `env:"testflight_internal_testing_only,opt[yes,no]"`
-	ExportOptionsPlistContent string `env:"export_options_plist_content"`
+	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
 
 	// App Store Connect connection override
 	APIKeyPath              stepconf.Secret `env:"api_key_path"`
@@ -97,7 +93,7 @@ type Config struct {
 	UploadBitcode               bool
 	CompileBitcode              bool
 	ManageVersionAndBuildNumber bool
-	XcodebuildVersion           models.XcodebuildVersionModel
+	XcodebuildVersion           xcodeversion.Version
 	CodesignManager             *codesign.Manager // nil if automatic code signing is "off"
 	VerboseLog                  bool
 }
@@ -146,7 +142,7 @@ func (s Step) ProcessInputs() (Config, error) {
 
 	distributionMethod, err := exportoptions.ParseMethod(inputs.DistributionMethod)
 	if err != nil {
-		return Config{}, fmt.Errorf("issue with input DistributionMethod: %s", err)
+		return Config{}, fmt.Errorf("failed to parse distribution method: %s", err)
 	}
 
 	productToDistribute, err := ParseExportProduct(inputs.ProductToDistribute)
@@ -177,17 +173,15 @@ func (s Step) ProcessInputs() (Config, error) {
 		s.logger.Warnf("TeamID contains leading and trailing white space, removed: %s", inputs.TeamID)
 	}
 
-	s.logger.Infof("Step determined configs:")
-
-	xcodebuildVersion, err := utility.GetXcodeVersion()
+	xcodebuildVersion, err := s.xcodeVersionReader.GetVersion()
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to determine Xcode version, error: %s", err)
+		return Config{}, fmt.Errorf("failed to determine Xcode version: %s", err)
 	}
-	s.logger.Printf("- xcodebuildVersion: %s (%s)", xcodebuildVersion.Version, xcodebuildVersion.BuildVersion)
+	s.logger.Infof("Xcode version: %s (%s)", xcodebuildVersion.Version, xcodebuildVersion.BuildVersion)
 
 	var codesignManager *codesign.Manager
 	if inputs.CodeSigningAuthSource != codeSignSourceOff {
-		manager, err := s.createCodesignManager(inputs, int(xcodebuildVersion.MajorVersion))
+		manager, err := s.createCodesignManager(inputs, int(xcodebuildVersion.Major))
 		if err != nil {
 			return Config{}, err
 		}
@@ -344,7 +338,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 
 	archive, err := xcarchive.NewIosArchive(opts.ArchivePath)
 	if err != nil {
-		return RunOut{}, fmt.Errorf("failed to parse archive, error: %s", err)
+		return RunOut{}, fmt.Errorf("failed to parse archive: %s", err)
 	}
 
 	exportOptionsGenerator := exportoptionsgenerator.NewWithIosArchive(archive, opts.ProductToDistribute, s.xcodeVersionReader, s.logger)
@@ -352,16 +346,6 @@ func (s Step) Run(opts Config) (RunOut, error) {
 	mainApplication := archive.Application
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
-
-	if opts.ProductToDistribute == exportoptionsgenerator.ExportProductAppClip {
-		if opts.XcodebuildVersion.MajorVersion < 12 {
-			return RunOut{}, fmt.Errorf("exporting an App Clip requires Xcode 12 or a later version")
-		}
-
-		if archive.Application.ClipApplication == nil {
-			return RunOut{}, fmt.Errorf("failed to export App Clip, error: xcarchive does not contain an App Clip")
-		}
-	}
 
 	fmt.Println()
 	s.logger.Infof("Archive info:")
@@ -381,24 +365,24 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 	} else {
-		containerEnvironment := ""
-		testFlightInternalTestingOnly := false
 		archivedWithXcodeManagedProfiles := archive.IsXcodeManaged()
 		codesigningStyle := exportoptions.SigningStyleManual
 		if authOptions != nil {
 			codesigningStyle = exportoptions.SigningStyleAutomatic
 		}
 
-		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(
-			opts.DistributionMethod,
-			containerEnvironment,
-			opts.TeamID,
-			opts.UploadBitcode,
-			opts.CompileBitcode,
-			archivedWithXcodeManagedProfiles,
-			codesigningStyle,
-			testFlightInternalTestingOnly,
-		)
+		containerEnvironment := ""
+		testFlightInternalTestingOnly := false
+		generatorOpts := exportoptionsgenerator.Opts{
+			ContainerEnvironment:             containerEnvironment,
+			TeamID:                           opts.TeamID,
+			UploadBitcode:                    opts.UploadBitcode,
+			CompileBitcode:                   opts.CompileBitcode,
+			ArchivedWithXcodeManagedProfiles: archivedWithXcodeManagedProfiles,
+			TestFlightInternalTestingOnly:    testFlightInternalTestingOnly,
+			ManageVersionAndBuildNumber:      opts.ManageVersionAndBuildNumber,
+		}
+		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(opts.DistributionMethod, codesigningStyle, generatorOpts)
 		if err != nil {
 			return RunOut{}, fmt.Errorf("failed to generate export options, error: %s", err)
 		}

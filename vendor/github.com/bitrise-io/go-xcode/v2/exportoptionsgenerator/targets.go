@@ -3,76 +3,77 @@ package exportoptionsgenerator
 import (
 	"fmt"
 
-	"github.com/bitrise-io/go-xcode/exportoptions"
 	"github.com/bitrise-io/go-xcode/plistutil"
 	"github.com/bitrise-io/go-xcode/xcodeproject/serialized"
 	"github.com/bitrise-io/go-xcode/xcodeproject/xcodeproj"
 	"github.com/bitrise-io/go-xcode/xcodeproject/xcscheme"
 )
 
-// TargetInfoProvider can determine a target's bundle id and codesign entitlements.
-type TargetInfoProvider interface {
-	applicationTargetsAndEntitlements(exportMethod exportoptions.Method) (string, map[string]plistutil.PlistData, error)
+type ArchiveInfo struct {
+	MainBundleID           string
+	AppClipBundleID        string
+	EntitlementsByBundleID map[string]plistutil.PlistData
 }
 
-// XcodebuildTargetInfoProvider implements TargetInfoProvider.
-type XcodebuildTargetInfoProvider struct {
+// InfoProvider can determine the exportable bundle ID(s) and codesign entitlements.
+type InfoProvider interface {
+	Read() (ArchiveInfo, error)
+}
+
+// XcodebuildInfoProvider implements TargetInfoProvider.
+type XcodebuildInfoProvider struct {
 	xcodeProj     *xcodeproj.XcodeProj
 	scheme        *xcscheme.Scheme
 	configuration string
 }
 
-func NewXcodebuildTargetInfoProvider(xcodeProj *xcodeproj.XcodeProj, scheme *xcscheme.Scheme, configuration string) TargetInfoProvider {
-	return &XcodebuildTargetInfoProvider{
+func NewXcodebuildTargetInfoProvider(xcodeProj *xcodeproj.XcodeProj, scheme *xcscheme.Scheme, configuration string) InfoProvider {
+	return &XcodebuildInfoProvider{
 		xcodeProj:     xcodeProj,
 		scheme:        scheme,
 		configuration: configuration,
 	}
 }
 
-// TargetBundleID ...
-func (b XcodebuildTargetInfoProvider) TargetBundleID(target, configuration string) (string, error) {
-	return b.xcodeProj.TargetBundleID(target, configuration)
-}
-
-// TargetCodeSignEntitlements ...
-func (b XcodebuildTargetInfoProvider) TargetCodeSignEntitlements(target, configuration string) (serialized.Object, error) {
-	return b.xcodeProj.TargetCodeSignEntitlements(target, configuration)
-}
-
-func (b XcodebuildTargetInfoProvider) applicationTargetsAndEntitlements(exportMethod exportoptions.Method) (string, map[string]plistutil.PlistData, error) {
+// Read returns the main target's bundle ID and the entitlements of all dependent targets.
+func (b XcodebuildInfoProvider) Read() (ArchiveInfo, error) {
 	mainTarget, err := ArchivableApplicationTarget(b.xcodeProj, b.scheme)
 	if err != nil {
-		return "", nil, err
+		return ArchiveInfo{}, err
 	}
 
-	dependentTargets := filterApplicationBundleTargets(
-		b.xcodeProj.DependentTargetsOfTarget(*mainTarget),
-		exportMethod,
-	)
+	dependentTargets := filterApplicationBundleTargets(b.xcodeProj.DependentTargetsOfTarget(*mainTarget))
 	targets := append([]xcodeproj.Target{*mainTarget}, dependentTargets...)
 
-	var mainTargetBundleID string
+	mainTargetBundleID := ""
+	appClipBundleID := ""
 	entitlementsByBundleID := map[string]plistutil.PlistData{}
 	for i, target := range targets {
-		bundleID, err := b.TargetBundleID(target.Name, b.configuration)
+		bundleID, err := b.xcodeProj.TargetBundleID(target.Name, b.configuration)
 		if err != nil {
-			return "", nil, fmt.Errorf("failed to get target (%s) bundle id: %s", target.Name, err)
+			return ArchiveInfo{}, fmt.Errorf("failed to get target (%s) bundle id: %s", target.Name, err)
 		}
 
-		entitlements, err := b.TargetCodeSignEntitlements(target.Name, b.configuration)
+		entitlements, err := b.xcodeProj.TargetCodeSignEntitlements(target.Name, b.configuration)
 		if err != nil && !serialized.IsKeyNotFoundError(err) {
-			return "", nil, fmt.Errorf("failed to get target (%s) bundle id: %s", target.Name, err)
+			return ArchiveInfo{}, fmt.Errorf("failed to get target (%s) bundle id: %s", target.Name, err)
 		}
 
 		entitlementsByBundleID[bundleID] = plistutil.PlistData(entitlements)
 
+		if target.IsAppClipProduct() {
+			appClipBundleID = bundleID
+		}
 		if i == 0 {
 			mainTargetBundleID = bundleID
 		}
 	}
 
-	return mainTargetBundleID, entitlementsByBundleID, nil
+	return ArchiveInfo{
+		MainBundleID:           mainTargetBundleID,
+		AppClipBundleID:        appClipBundleID,
+		EntitlementsByBundleID: entitlementsByBundleID,
+	}, nil
 }
 
 // ArchivableApplicationTarget locate archivable app target from a given project and scheme
@@ -90,32 +91,14 @@ func ArchivableApplicationTarget(xcodeProj *xcodeproj.XcodeProj, scheme *xcschem
 	return &mainTarget, nil
 }
 
-func filterApplicationBundleTargets(targets []xcodeproj.Target, exportMethod exportoptions.Method) (filteredTargets []xcodeproj.Target) {
-	fmt.Printf("Filtering %v application bundle targets", len(targets))
-
+func filterApplicationBundleTargets(targets []xcodeproj.Target) (filteredTargets []xcodeproj.Target) {
 	for _, target := range targets {
 		if !target.IsExecutableProduct() {
 			continue
 		}
 
-		// App store exports contain App Clip too. App Clip provisioning profile has to be included in export options:
-		// ..
-		// <key>provisioningProfiles</key>
-		// <dict>
-		// 	<key>io.bundle.id</key>
-		// 	<string>Development Application Profile</string>
-		// 	<key>io.bundle.id.AppClipID</key>
-		// 	<string>Development App Clip Profile</string>
-		// </dict>
-		// ..,
-		if !exportMethod.IsAppStore() && target.IsAppClipProduct() {
-			continue
-		}
-
 		filteredTargets = append(filteredTargets, target)
 	}
-
-	fmt.Printf("Found %v application bundle targets", len(filteredTargets))
 
 	return
 }

@@ -10,7 +10,7 @@ require (
 	github.com/bitrise-io/go-utils v1.0.14
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.23
 	github.com/bitrise-io/go-xcode v1.3.0
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.56
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.56.0.20250416103841-a48d6e7390f5
 	howett.net/plist v1.0.1
 )
 
@@ -39,6 +39,3 @@ require (
 	golang.org/x/text v0.24.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-// override with local path
-replace github.com/bitrise-io/go-xcode/v2 => /Users/lpusok/Develop/go/src/github.com/bitrise-steplib/go-xcode
