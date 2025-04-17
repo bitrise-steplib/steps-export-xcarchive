@@ -1,9 +1,7 @@
 package exportoptionsgenerator
 
 import (
-	"fmt"
-
-	"github.com/bitrise-io/go-xcode/v2/xcarchive"
+	"github.com/bitrise-io/go-xcode/xcarchive"
 )
 
 // ExportProduct ...
@@ -16,43 +14,16 @@ const (
 	ExportProductAppClip ExportProduct = "app-clip"
 )
 
-// ArchiveInfoProvider fetches bundleID and entitlements from an xcarchive.
-type ArchiveInfoProvider struct {
-	archive       xcarchive.IosArchive
-	exportProduct ExportProduct
-}
-
-// NewIosArchiveInfoProvider ...
-func NewIosArchiveInfoProvider(archive xcarchive.IosArchive, exportProduct ExportProduct) InfoProvider {
-	return ArchiveInfoProvider{
-		archive:       archive,
-		exportProduct: exportProduct,
-	}
-}
-
-// Read ...
-func (a ArchiveInfoProvider) Read() (ArchiveInfo, error) {
-	productBundleID := ""
+// ReadArchiveExportInfo ...
+func ReadArchiveExportInfo(archive xcarchive.IosArchive) (ArchiveInfo, error) {
 	appClipBundleID := ""
-	if a.archive.Application.ClipApplication != nil {
-		appClipBundleID = a.archive.Application.ClipApplication.BundleIdentifier()
-	}
-
-	switch a.exportProduct {
-	case ExportProductApp:
-		productBundleID = a.archive.Application.BundleIdentifier()
-	case ExportProductAppClip:
-		if appClipBundleID == "" {
-			return ArchiveInfo{}, fmt.Errorf("xcarchive does not contain an App Clip, cannot export an App Clip")
-		}
-		productBundleID = appClipBundleID
-	default:
-		panic("unknown export product")
+	if archive.Application.ClipApplication != nil {
+		appClipBundleID = archive.Application.ClipApplication.BundleIdentifier()
 	}
 
 	return ArchiveInfo{
-		MainBundleID:           productBundleID,
+		AppBundleID:            archive.Application.BundleIdentifier(),
 		AppClipBundleID:        appClipBundleID,
-		EntitlementsByBundleID: a.archive.BundleIDEntitlementsMap(),
+		EntitlementsByBundleID: archive.BundleIDEntitlementsMap(),
 	}, nil
 }

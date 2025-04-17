@@ -84,6 +84,7 @@ type Inputs struct {
 }
 
 type Config struct {
+	Archive                     xcarchive.IosArchive
 	ArchivePath                 string
 	DeployDir                   string
 	ProductToDistribute         exportoptionsgenerator.ExportProduct
@@ -179,9 +180,14 @@ func (s Step) ProcessInputs() (Config, error) {
 	}
 	s.logger.Infof("Xcode version: %s (%s)", xcodebuildVersion.Version, xcodebuildVersion.BuildVersion)
 
+	archive, err := xcarchive.NewIosArchive(inputs.ArchivePath)
+	if err != nil {
+		return Config{}, err
+	}
+
 	var codesignManager *codesign.Manager
 	if inputs.CodeSigningAuthSource != codeSignSourceOff {
-		manager, err := s.createCodesignManager(inputs, int(xcodebuildVersion.Major))
+		manager, err := s.createCodesignManager(inputs, archive, int(xcodebuildVersion.Major))
 		if err != nil {
 			return Config{}, err
 		}
@@ -189,6 +195,7 @@ func (s Step) ProcessInputs() (Config, error) {
 	}
 
 	return Config{
+		Archive:                   archive,
 		ArchivePath:               inputs.ArchivePath,
 		DeployDir:                 inputs.DeployDir,
 		ProductToDistribute:       productToDistribute,
@@ -202,7 +209,7 @@ func (s Step) ProcessInputs() (Config, error) {
 	}, nil
 }
 
-func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codesign.Manager, error) {
+func (s Step) createCodesignManager(inputs Inputs, archive xcarchive.IosArchive, xcodeMajorVersion int) (codesign.Manager, error) {
 	var authType codesign.AuthType
 	switch inputs.CodeSigningAuthSource {
 	case codeSignSourceAppleID:
@@ -227,12 +234,6 @@ func (s Step) createCodesignManager(inputs Inputs, xcodeMajorVersion int) (codes
 	if err != nil {
 		return codesign.Manager{}, fmt.Errorf("issue with input: %s", err)
 	}
-
-	a, err := xcarchive.NewIosArchive(inputs.ArchivePath)
-	if err != nil {
-		return codesign.Manager{}, err
-	}
-	archive := codesign.NewArchive(a)
 
 	var serviceConnection *devportalservice.AppleDeveloperConnection = nil
 	devPortalClientFactory := devportalclient.NewFactory(s.logger, s.fileManager)
@@ -336,14 +337,19 @@ func (s Step) Run(opts Config) (RunOut, error) {
 		}
 	}
 
-	archive, err := xcarchive.NewIosArchive(opts.ArchivePath)
-	if err != nil {
-		return RunOut{}, fmt.Errorf("failed to parse archive: %s", err)
+	appClipBundleID := ""
+	if opts.Archive.Application.ClipApplication != nil {
+		appClipBundleID = opts.Archive.Application.ClipApplication.BundleIdentifier()
+	}
+	archiveInfo := exportoptionsgenerator.ArchiveInfo{
+		AppBundleID:            opts.Archive.Application.BundleIdentifier(),
+		AppClipBundleID:        appClipBundleID,
+		EntitlementsByBundleID: opts.Archive.BundleIDEntitlementsMap(),
 	}
 
-	exportOptionsGenerator := exportoptionsgenerator.NewWithIosArchive(archive, opts.ProductToDistribute, s.xcodeVersionReader, s.logger)
+	exportOptionsGenerator := exportoptionsgenerator.New(s.xcodeVersionReader, s.logger)
 
-	mainApplication := archive.Application
+	mainApplication := opts.Archive.Application
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
 
@@ -365,7 +371,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 	} else {
-		archivedWithXcodeManagedProfiles := archive.IsXcodeManaged()
+		archivedWithXcodeManagedProfiles := opts.Archive.IsXcodeManaged()
 		codesigningStyle := exportoptions.SigningStyleManual
 		if authOptions != nil {
 			codesigningStyle = exportoptions.SigningStyleAutomatic
@@ -382,7 +388,12 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			TestFlightInternalTestingOnly:    testFlightInternalTestingOnly,
 			ManageVersionAndBuildNumber:      opts.ManageVersionAndBuildNumber,
 		}
-		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(opts.DistributionMethod, codesigningStyle, generatorOpts)
+		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(
+			opts.ProductToDistribute,
+			archiveInfo,
+			opts.DistributionMethod,
+			codesigningStyle,
+			generatorOpts)
 		if err != nil {
 			return RunOut{}, fmt.Errorf("failed to generate export options, error: %s", err)
 		}
@@ -433,7 +444,7 @@ will be available in the $BITRISE_IDEDISTRIBUTION_LOGS_PATH environment variable
 		}, fmt.Errorf("export failed, error: %s", err)
 	}
 
-	appDSYMs, _, err := archive.FindDSYMs()
+	appDSYMs, _, err := opts.Archive.FindDSYMs()
 	if err != nil {
 		return RunOut{}, fmt.Errorf("failed to export dsym, error: %s", err)
 	}
