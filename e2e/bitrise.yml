@@ -197,6 +197,12 @@ workflows:
         - archive_path: ./archives/ios.xcarchive
         - verbose_log: "yes"
     - path::./:
+        title: Step Test - iOS archive
+        inputs:
+        - distribution_method: app-store
+        - archive_path: ./archives/ios.xcarchive
+        - verbose_log: "yes"
+    - path::./:
         title: Step Test - Custom plist
         inputs:
         - distribution_method: development
