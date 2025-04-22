@@ -115,20 +115,26 @@ type ExportOpts struct {
 }
 
 type Step struct {
-	commandFactory     command.Factory
-	inputParser        stepconf.InputParser
-	logger             log.Logger
-	fileManager        fileutil.FileManager
-	xcodeVersionReader xcodeversion.Reader
+	commandFactory         command.Factory
+	inputParser            stepconf.InputParser
+	logger                 log.Logger
+	fileManager            fileutil.FileManager
+	xcodeVersionReader     xcodeversion.Reader
+	exportOptionsGenerator exportoptionsgenerator.ExportOptionsGenerator
 }
 
-func NewStep(commandFactory command.Factory, inputParser stepconf.InputParser, logger log.Logger, fileManager fileutil.FileManager, xcodeVersionReader xcodeversion.Reader) Step {
+func NewStep(commandFactory command.Factory,
+	inputParser stepconf.InputParser,
+	logger log.Logger, fileManager fileutil.FileManager,
+	xcodeVersionReader xcodeversion.Reader,
+	exportOptionsGenerator exportoptionsgenerator.ExportOptionsGenerator) Step {
 	return Step{
-		commandFactory:     commandFactory,
-		inputParser:        inputParser,
-		logger:             logger,
-		fileManager:        fileManager,
-		xcodeVersionReader: xcodeVersionReader,
+		commandFactory:         commandFactory,
+		inputParser:            inputParser,
+		logger:                 logger,
+		fileManager:            fileManager,
+		xcodeVersionReader:     xcodeVersionReader,
+		exportOptionsGenerator: exportOptionsGenerator,
 	}
 }
 
@@ -337,22 +343,9 @@ func (s Step) Run(opts Config) (RunOut, error) {
 		}
 	}
 
-	appClipBundleID := ""
-	if opts.Archive.Application.ClipApplication != nil {
-		appClipBundleID = opts.Archive.Application.ClipApplication.BundleIdentifier()
-	}
-	archiveInfo := exportoptionsgenerator.ArchiveInfo{
-		AppBundleID:            opts.Archive.Application.BundleIdentifier(),
-		AppClipBundleID:        appClipBundleID,
-		EntitlementsByBundleID: opts.Archive.BundleIDEntitlementsMap(),
-	}
-
-	exportOptionsGenerator := exportoptionsgenerator.New(s.xcodeVersionReader, s.logger)
-
 	mainApplication := opts.Archive.Application
 	archiveExportMethod := mainApplication.ProvisioningProfile.ExportType
 	archiveCodeSignIsXcodeManaged := profileutil.IsXcodeManaged(mainApplication.ProvisioningProfile.Name)
-
 	fmt.Println()
 	s.logger.Infof("Archive info:")
 	s.logger.Printf("team: %s (%s)", mainApplication.ProvisioningProfile.TeamName, mainApplication.ProvisioningProfile.TeamID)
@@ -371,24 +364,30 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			return RunOut{}, fmt.Errorf("failed to write export options to file, error: %s", err)
 		}
 	} else {
-		archivedWithXcodeManagedProfiles := opts.Archive.IsXcodeManaged()
+		appClipBundleID := ""
+		if opts.Archive.Application.ClipApplication != nil {
+			appClipBundleID = opts.Archive.Application.ClipApplication.BundleIdentifier()
+		}
+		archiveInfo := exportoptionsgenerator.ArchiveInfo{
+			AppBundleID:            opts.Archive.Application.BundleIdentifier(),
+			AppClipBundleID:        appClipBundleID,
+			EntitlementsByBundleID: opts.Archive.BundleIDEntitlementsMap(),
+		}
 		codesigningStyle := exportoptions.SigningStyleManual
 		if authOptions != nil {
 			codesigningStyle = exportoptions.SigningStyleAutomatic
 		}
-
-		containerEnvironment := ""
-		testFlightInternalTestingOnly := false
 		generatorOpts := exportoptionsgenerator.Opts{
-			ContainerEnvironment:             containerEnvironment,
+			ContainerEnvironment:             "", // ToDo: add missing input
 			TeamID:                           opts.TeamID,
 			UploadBitcode:                    opts.UploadBitcode,
 			CompileBitcode:                   opts.CompileBitcode,
-			ArchivedWithXcodeManagedProfiles: archivedWithXcodeManagedProfiles,
-			TestFlightInternalTestingOnly:    testFlightInternalTestingOnly,
+			ArchivedWithXcodeManagedProfiles: opts.Archive.IsXcodeManaged(),
+			TestFlightInternalTestingOnly:    false, // ToDo: add missing input
 			ManageVersionAndBuildNumber:      opts.ManageVersionAndBuildNumber,
 		}
-		exportOptions, err := exportOptionsGenerator.GenerateApplicationExportOptions(
+
+		exportOptions, err := s.exportOptionsGenerator.GenerateApplicationExportOptions(
 			opts.ProductToDistribute,
 			archiveInfo,
 			opts.DistributionMethod,
@@ -520,8 +519,9 @@ func RunStep() error {
 	envRepository := env.NewRepository()
 	cmdFactory := command.NewFactory(envRepository)
 	xcodeVersionReader := xcodeversion.NewXcodeVersionProvider(cmdFactory)
+	exportOptionsGenerator := exportoptionsgenerator.New(xcodeVersionReader, log.NewLogger())
 
-	step := NewStep(cmdFactory, stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager(), xcodeVersionReader)
+	step := NewStep(cmdFactory, stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager(), xcodeVersionReader, exportOptionsGenerator)
 
 	config, err := step.ProcessInputs()
 	if err != nil {
