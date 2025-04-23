@@ -516,12 +516,13 @@ func (s Step) ExportOutput(opts ExportOpts) error {
 }
 
 func RunStep() error {
+	logger := log.NewLogger()
 	envRepository := env.NewRepository()
 	cmdFactory := command.NewFactory(envRepository)
 	xcodeVersionReader := xcodeversion.NewXcodeVersionProvider(cmdFactory)
-	exportOptionsGenerator := exportoptionsgenerator.New(xcodeVersionReader, log.NewLogger())
+	exportOptionsGenerator := exportoptionsgenerator.New(xcodeVersionReader, logger)
 
-	step := NewStep(cmdFactory, stepconf.NewInputParser(envRepository), log.NewLogger(), fileutil.NewFileManager(), xcodeVersionReader, exportOptionsGenerator)
+	step := NewStep(cmdFactory, stepconf.NewInputParser(envRepository), logger, fileutil.NewFileManager(), xcodeVersionReader, exportOptionsGenerator)
 
 	config, err := step.ProcessInputs()
 	if err != nil {
