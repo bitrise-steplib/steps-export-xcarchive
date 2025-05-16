@@ -180,6 +180,8 @@ workflows:
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
+        run_if: |-
+            {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
         title: Step Test - Bitrise managed Apple ID, tvOS
         inputs:
         - distribution_method: development

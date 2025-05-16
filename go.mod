@@ -7,10 +7,10 @@ toolchain go1.23.5
 require (
 	github.com/bitrise-io/go-steputils v1.0.6
 	github.com/bitrise-io/go-steputils/v2 v2.0.0-alpha.37
-	github.com/bitrise-io/go-utils v1.0.14
+	github.com/bitrise-io/go-utils v1.0.15
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.23
 	github.com/bitrise-io/go-xcode v1.3.0
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.57
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.58
 	howett.net/plist v1.0.1
 )
 
@@ -19,7 +19,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
 )
 
 require (
@@ -36,6 +36,6 @@ require (
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

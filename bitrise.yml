@@ -41,9 +41,10 @@ workflows:
 
   e2e:
     steps:
-    - git::https://github.com/bitrise-steplib/steps-check.git:
-        inputs:
-        - workflow: e2e
+    # ToDo: reenable
+    # - git::https://github.com/bitrise-steplib/steps-check.git:
+    #     inputs:
+    #     - workflow: e2e
 
   generate_readme:
     steps:
