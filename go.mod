@@ -10,14 +10,16 @@ require (
 	github.com/bitrise-io/go-utils v1.0.15
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.23
 	github.com/bitrise-io/go-xcode v1.3.0
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.58
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.60
 	howett.net/plist v1.0.1
 )
 
 require (
 	github.com/bitrise-io/go-pkcs12 v0.1.0 // indirect
+	github.com/gofrs/uuid/v5 v5.2.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 )
@@ -35,7 +37,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
