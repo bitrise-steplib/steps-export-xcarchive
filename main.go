@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"howett.net/plist"
+
 	"github.com/bitrise-io/go-steputils/output"
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	v1command "github.com/bitrise-io/go-utils/command"
@@ -30,7 +32,6 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/xcarchive"
 	"github.com/bitrise-io/go-xcode/v2/xcodeversion"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
-	"howett.net/plist"
 )
 
 const (
@@ -293,6 +294,7 @@ func (s Step) createCodesignManager(inputs Inputs, archive xcarchive.IosArchive,
 		profiledownloader.New(codesignConfig.FallbackProvisioningProfiles, retryClient),
 		codesignasset.NewWriter(codesignConfig.Keychain),
 		localcodesignasset.NewManager(localcodesignasset.NewProvisioningProfileProvider(), localcodesignasset.NewProvisioningProfileConverter()),
+		localcodesignasset.NewProvisioningProfileConverter(),
 		archive,
 		s.logger,
 	), nil
