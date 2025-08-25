@@ -248,8 +248,8 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
-            rm -rf ~/Library/MobileDevice/Provisioning\ Profiles
-            rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
+            rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
+            rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*
     - change-workdir:
         title: Switch working dir to _tmp
         inputs:
