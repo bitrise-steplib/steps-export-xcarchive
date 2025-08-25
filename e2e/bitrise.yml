@@ -181,7 +181,7 @@ workflows:
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
         run_if: |-
-            {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
+          {{ or (enveq "IS_LATEST_STACK_XCODE" "true") (not .IsCI) }}
         title: Step Test - Bitrise managed Apple ID, tvOS
         inputs:
         - distribution_method: development
@@ -248,8 +248,8 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
-            rm -rf "~/Library/MobileDevice/Provisioning Profiles"
-            rm -rf "~/Library/Developer/Xcode/UserData/Provisioning Profiles"
+            rm -rf ~/Library/MobileDevice/Provisioning\ Profiles
+            rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
     - change-workdir:
         title: Switch working dir to _tmp
         inputs:
