@@ -235,20 +235,21 @@ workflows:
   _setup:
     steps:
     - script:
-        title: Remove provisioning profiles from previous runs
-        run_if: .IsCI
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            rm -rf ~/Library/MobileDevice/Provisioning Profiles
-    - script:
         title: Clean _tmp dir
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -ex
             rm -rf "./_tmp"
+    - script:
+          title: Remove provisioning profiles from previous runs
+          run_if: .IsCI
+          inputs:
+          - content: |-
+                #!/bin/bash
+                set -ex
+                rm -rf "~/Library/MobileDevice/Provisioning Profiles"
+                rm -rf "~/Library/Developer/Xcode/UserData/Provisioning Profiles"
     - change-workdir:
         title: Switch working dir to _tmp
         inputs:
