@@ -44,18 +44,15 @@ github.com/bitrise-io/go-utils/v2/retryhttp
 github.com/bitrise-io/go-xcode/certificateutil
 github.com/bitrise-io/go-xcode/export
 github.com/bitrise-io/go-xcode/exportoptions
-github.com/bitrise-io/go-xcode/models
 github.com/bitrise-io/go-xcode/plistutil
 github.com/bitrise-io/go-xcode/profileutil
-github.com/bitrise-io/go-xcode/utility
-github.com/bitrise-io/go-xcode/xcarchive
 github.com/bitrise-io/go-xcode/xcodebuild
 github.com/bitrise-io/go-xcode/xcodeproject/schemeint
 github.com/bitrise-io/go-xcode/xcodeproject/serialized
 github.com/bitrise-io/go-xcode/xcodeproject/xcodeproj
 github.com/bitrise-io/go-xcode/xcodeproject/xcscheme
 github.com/bitrise-io/go-xcode/xcodeproject/xcworkspace
-# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.60
+# github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.62
 ## explicit; go 1.22
 github.com/bitrise-io/go-xcode/v2/autocodesign
 github.com/bitrise-io/go-xcode/v2/autocodesign/certdownloader
