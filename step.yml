@@ -36,12 +36,12 @@ website: https://github.com/bitrise-steplib/steps-export-xcarchive
 source_code_url: https://github.com/bitrise-steplib/steps-export-xcarchive
 support_url: https://github.com/bitrise-steplib/steps-export-xcarchive/issues
 project_type_tags:
-- ios
 - cordova
-- ionic
-- react-native
 - flutter
-- xamarin
+- ionic
+- ios
+- kotlin-multiplatform
+- react-native
 type_tags:
 - utility
 is_always_run: false
