@@ -65,11 +65,12 @@ type Inputs struct {
 	FallbackProvisioningProfileURLs string          `env:"fallback_provisioning_profile_url_list"`
 
 	// IPA export configuration
-	TeamID                      string `env:"export_development_team"`
-	CompileBitcode              bool   `env:"compile_bitcode,opt[yes,no]"`
-	UploadBitcode               bool   `env:"upload_bitcode,opt[yes,no]"`
-	ManageVersionAndBuildNumber bool   `env:"manage_version_and_build_number"`
-	ExportOptionsPlistContent   string `env:"export_options_plist_content"`
+	TeamID                        string `env:"export_development_team"`
+	CompileBitcode                bool   `env:"compile_bitcode,opt[yes,no]"`
+	UploadBitcode                 bool   `env:"upload_bitcode,opt[yes,no]"`
+	ManageVersionAndBuildNumber   bool   `env:"manage_version_and_build_number"`
+	TestFlightInternalTestingOnly bool   `env:"testflight_internal_testing_only,opt[yes,no]"`
+	ExportOptionsPlistContent     string `env:"export_options_plist_content"`
 
 	// App Store Connect connection override
 	APIKeyPath              stepconf.Secret `env:"api_key_path"`
@@ -85,19 +86,20 @@ type Inputs struct {
 }
 
 type Config struct {
-	Archive                     xcarchive.IosArchive
-	ArchivePath                 string
-	DeployDir                   string
-	ProductToDistribute         exportoptionsgenerator.ExportProduct
-	ExportOptionsPlistContent   string
-	DistributionMethod          exportoptions.Method
-	TeamID                      string
-	UploadBitcode               bool
-	CompileBitcode              bool
-	ManageVersionAndBuildNumber bool
-	XcodebuildVersion           xcodeversion.Version
-	CodesignManager             *codesign.Manager // nil if automatic code signing is "off"
-	VerboseLog                  bool
+	Archive                       xcarchive.IosArchive
+	ArchivePath                   string
+	DeployDir                     string
+	ProductToDistribute           exportoptionsgenerator.ExportProduct
+	ExportOptionsPlistContent     string
+	DistributionMethod            exportoptions.Method
+	TeamID                        string
+	UploadBitcode                 bool
+	CompileBitcode                bool
+	ManageVersionAndBuildNumber   bool
+	TestFlightInternalTestingOnly bool
+	XcodebuildVersion             xcodeversion.Version
+	CodesignManager               *codesign.Manager // nil if automatic code signing is "off"
+	VerboseLog                    bool
 }
 
 type RunOut struct {
@@ -181,6 +183,12 @@ func (s Step) ProcessInputs() (Config, error) {
 		s.logger.Warnf("TeamID contains leading and trailing white space, removed: %s", inputs.TeamID)
 	}
 
+	if inputs.DistributionMethod != "app-store" && inputs.TestFlightInternalTestingOnly {
+		s.logger.Println()
+		s.logger.Warnf("TestFlightInternalTestingOnly is valid only for Distribution Method app-store.")
+		s.logger.Println()
+	}
+
 	xcodebuildVersion, err := s.xcodeVersionReader.GetVersion()
 	if err != nil {
 		return Config{}, fmt.Errorf("failed to determine Xcode version: %s", err)
@@ -202,17 +210,19 @@ func (s Step) ProcessInputs() (Config, error) {
 	}
 
 	return Config{
-		Archive:                   archive,
-		ArchivePath:               inputs.ArchivePath,
-		DeployDir:                 inputs.DeployDir,
-		ProductToDistribute:       productToDistribute,
-		ExportOptionsPlistContent: inputs.ExportOptionsPlistContent,
-		DistributionMethod:        distributionMethod,
-		TeamID:                    inputs.TeamID,
-		UploadBitcode:             inputs.UploadBitcode,
-		CompileBitcode:            inputs.CompileBitcode,
-		XcodebuildVersion:         xcodebuildVersion,
-		CodesignManager:           codesignManager,
+		Archive:                       archive,
+		ArchivePath:                   inputs.ArchivePath,
+		DeployDir:                     inputs.DeployDir,
+		ProductToDistribute:           productToDistribute,
+		ExportOptionsPlistContent:     inputs.ExportOptionsPlistContent,
+		DistributionMethod:            distributionMethod,
+		TeamID:                        inputs.TeamID,
+		UploadBitcode:                 inputs.UploadBitcode,
+		CompileBitcode:                inputs.CompileBitcode,
+		ManageVersionAndBuildNumber:   inputs.ManageVersionAndBuildNumber,
+		TestFlightInternalTestingOnly: inputs.TestFlightInternalTestingOnly,
+		XcodebuildVersion:             xcodebuildVersion,
+		CodesignManager:               codesignManager,
 	}, nil
 }
 
@@ -385,7 +395,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 			UploadBitcode:                    opts.UploadBitcode,
 			CompileBitcode:                   opts.CompileBitcode,
 			ArchivedWithXcodeManagedProfiles: opts.Archive.IsXcodeManaged(),
-			TestFlightInternalTestingOnly:    false, // ToDo: add missing input
+			TestFlightInternalTestingOnly:    opts.TestFlightInternalTestingOnly,
 			ManageVersionAndBuildNumber:      opts.ManageVersionAndBuildNumber,
 		}
 
