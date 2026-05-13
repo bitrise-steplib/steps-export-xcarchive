@@ -1,8 +1,6 @@
 module github.com/bitrise-steplib/steps-export-xcarchive
 
-go 1.23.0
-
-toolchain go1.23.5
+go 1.24.0
 
 require (
 	github.com/bitrise-io/go-steputils v1.0.6
@@ -21,7 +19,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 )
 
 require (
@@ -38,6 +36,6 @@ require (
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
