@@ -289,6 +289,20 @@ workflows:
             set -ex
             rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
             rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*
+    - script:
+        title: Reset codesigning keychain from previous test workflow runs
+        run_if: .IsCI
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            # Each test_* workflow runs as a separate nested `bitrise run` invocation in the
+            # same CI VM and reuses $BITRISE_KEYCHAIN_PATH if it already exists (see
+            # go-xcode/v2/autocodesign/keychain.Keychain.New). Without this, certificates
+            # installed by an earlier test_* workflow in this job stick around and can
+            # collide (same common name, different serial) with the certificate the current
+            # test installs, causing xcodebuild to pick the wrong signing identity.
+            rm -f "$BITRISE_KEYCHAIN_PATH" "$BITRISE_KEYCHAIN_PATH-db"
     - change-workdir:
         title: Switch working dir to _tmp
         inputs:
