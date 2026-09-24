@@ -13,14 +13,13 @@ import (
 	"github.com/bitrise-io/go-steputils/v2/stepconf"
 	v1command "github.com/bitrise-io/go-utils/command"
 	v1log "github.com/bitrise-io/go-utils/log"
-	"github.com/bitrise-io/go-utils/pathutil"
+	v1pathutil "github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/fileutil"
 	"github.com/bitrise-io/go-utils/v2/log"
-	"github.com/bitrise-io/go-utils/v2/retryhttp"
+	"github.com/bitrise-io/go-utils/v2/pathutil"
 	"github.com/bitrise-io/go-xcode/exportoptions"
-	"github.com/bitrise-io/go-xcode/profileutil"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/certdownloader"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/codesignasset"
 	"github.com/bitrise-io/go-xcode/v2/autocodesign/devportalclient"
@@ -29,6 +28,7 @@ import (
 	"github.com/bitrise-io/go-xcode/v2/codesign"
 	"github.com/bitrise-io/go-xcode/v2/devportalservice"
 	"github.com/bitrise-io/go-xcode/v2/exportoptionsgenerator"
+	"github.com/bitrise-io/go-xcode/v2/profileutil"
 	"github.com/bitrise-io/go-xcode/v2/xcarchive"
 	"github.com/bitrise-io/go-xcode/v2/xcodeversion"
 	"github.com/bitrise-io/go-xcode/xcodebuild"
@@ -294,15 +294,15 @@ func (s Step) createCodesignManager(inputs Inputs, archive xcarchive.IosArchive,
 		testDevices = serviceConnection.TestDevices
 	}
 
-	retryClient := retryhttp.NewClient(s.logger).StandardClient()
+	profileReader := profileutil.NewProfileReader(s.logger, s.fileManager, pathutil.NewPathModifier(), pathutil.NewPathProvider())
 	return codesign.NewManagerWithArchive(
 		opts,
 		appleAuthCredentials,
 		testDevices,
 		devPortalClientFactory,
-		certdownloader.NewDownloader(codesignConfig.CertificatesAndPassphrases, retryClient),
-		profiledownloader.New(codesignConfig.FallbackProvisioningProfiles, retryClient),
-		codesignasset.NewWriter(codesignConfig.Keychain),
+		certdownloader.NewDownloader(codesignConfig.CertificatesAndPassphrases, s.logger),
+		profiledownloader.New(codesignConfig.FallbackProvisioningProfiles, s.logger),
+		codesignasset.NewWriter(s.logger, codesignConfig.Keychain, s.fileManager, profileReader, int64(xcodeMajorVersion)),
 		localcodesignasset.NewManager(localcodesignasset.NewProvisioningProfileProvider(), localcodesignasset.NewProvisioningProfileConverter()),
 		localcodesignasset.NewProvisioningProfileConverter(),
 		archive,
@@ -315,7 +315,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 	if opts.CodesignManager != nil {
 		s.logger.Infof("Preparing code signing assets (certificates, profiles)")
 
-		xcodebuildAuthParams, err := opts.CodesignManager.PrepareCodesigning()
+		xcodebuildAuthParams, _, err := opts.CodesignManager.PrepareCodesigning()
 		if err != nil {
 			return RunOut{}, fmt.Errorf("failed to manage code signing: %s", err)
 		}
@@ -422,7 +422,7 @@ func (s Step) Run(opts Config) (RunOut, error) {
 		fmt.Println()
 	}
 
-	tmpDir, err := pathutil.NormalizedOSTempDirPath("__export__")
+	tmpDir, err := v1pathutil.NormalizedOSTempDirPath("__export__")
 	if err != nil {
 		return RunOut{}, fmt.Errorf("failed to create tmp dir, error: %s", err)
 	}
