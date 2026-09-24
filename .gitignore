@@ -3,3 +3,5 @@
 _tmp/
 .vscode
 .idea
+steps-export-xcarchive
+bin/
