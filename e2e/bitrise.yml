@@ -195,6 +195,45 @@ workflows:
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
 
+  test_testflight_internal_testing_only:
+    description: |-
+      Test if the testflight_internal_testing_only input reaches the generated export options plist.
+      Covers app-store distribution (step ignores the input for any other).
+    before_run:
+    - _setup
+    steps:
+    - path::./:
+        title: Step Test - App Store export for internal TestFlight testing
+        inputs:
+        - distribution_method: app-store
+        - archive_path: ./archives/Fruta.xcarchive
+        - testflight_internal_testing_only: "yes"
+        - automatic_code_signing: api-key
+        - verbose_log: "yes"
+        - min_profile_validity: 30
+        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - keychain_path: $BITRISE_KEYCHAIN_PATH
+        - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
+    - script:
+        title: Verify the generated export options plist
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            plist="$BITRISE_DEPLOY_DIR/export_options.plist"
+
+            # PlistBuddy reports missing key on stdout with an unreliable exit code,
+            # so assertion looks at the printed value instead of the status.
+            value=$(/usr/libexec/PlistBuddy -c "Print :testFlightInternalTestingOnly" "$plist" 2>&1 || true)
+
+            if [ "$value" != "true" ]; then
+              echo "expected testFlightInternalTestingOnly to be true in $plist, got: $value"
+              /usr/libexec/PlistBuddy -c "Print" "$plist" || true
+              exit 1
+            fi
+
   test_ipa_exports:
     before_run:
     - _setup
@@ -250,6 +289,20 @@ workflows:
             set -ex
             rm -rf ~/Library/MobileDevice/Provisioning\ Profiles/*
             rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*
+    - script:
+        title: Reset codesigning keychain from previous test workflow runs
+        run_if: .IsCI
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            # Each test_* workflow runs as a separate nested `bitrise run` invocation in the
+            # same CI VM and reuses $BITRISE_KEYCHAIN_PATH if it already exists (see
+            # go-xcode/v2/autocodesign/keychain.Keychain.New). Without this, certificates
+            # installed by an earlier test_* workflow in this job stick around and can
+            # collide (same common name, different serial) with the certificate the current
+            # test installs, causing xcodebuild to pick the wrong signing identity.
+            rm -f "$BITRISE_KEYCHAIN_PATH" "$BITRISE_KEYCHAIN_PATH-db"
     - change-workdir:
         title: Switch working dir to _tmp
         inputs:
