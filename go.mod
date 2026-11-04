@@ -10,7 +10,7 @@ require (
 	github.com/bitrise-io/go-utils v1.0.15
 	github.com/bitrise-io/go-utils/v2 v2.0.0-alpha.39
 	github.com/bitrise-io/go-xcode v1.3.3
-	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.91.0.20261104074516-23e38afa48eb
+	github.com/bitrise-io/go-xcode/v2 v2.0.0-alpha.91.0.20261104153519-9d03ee6c2864
 	howett.net/plist v1.0.1
 )
 
