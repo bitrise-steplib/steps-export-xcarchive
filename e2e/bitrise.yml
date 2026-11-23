@@ -6,16 +6,16 @@ app:
   # secrets
   - BITRISE_KEYCHAIN_PATH: $BITRISE_KEYCHAIN_PATH
   - BITRISE_KEYCHAIN_PASSWORD: $BITRISE_KEYCHAIN_PASSWORD
-  - BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-  - BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-  - BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
-  - BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
-  - BITFALL_APPSTORECONNECT_API_KEY_URL: $BITFALL_APPSTORECONNECT_API_KEY_URL
-  - BITFALL_APPSTORECONNECT_API_KEY_ID: $BITFALL_APPSTORECONNECT_API_KEY_ID
-  - BITFALL_APPSTORECONNECT_API_KEY_ISSUER_ID: $BITFALL_APPSTORECONNECT_API_KEY_ISSUER_ID
+  - BLTD_APPLE_CERTIFICATE_URL_LIST: $BLTD_APPLE_CERTIFICATE_URL_LIST
+  - BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+  - BLTD_APPLE_CERTIFICATE_NOPASSPHRASE_URL: $BLTD_APPLE_CERTIFICATE_NOPASSPHRASE_URL
+  - BLTD_PROVISIONING_PROFILE_URL_LIST: $BLTD_PROVISIONING_PROFILE_URL_LIST
+  - BLTD_APPSTORECONNECT_API_KEY_URL: $BLTD_APPSTORECONNECT_API_KEY_URL
+  - BLTD_APPSTORECONNECT_API_KEY_ID: $BLTD_APPSTORECONNECT_API_KEY_ID
+  - BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
   - SAMPLE_ARTIFACTS_URL: https://github.com/bitrise-io/sample-artifacts.git
   - SAMPLE_ARTIFACTS_BRANCH: master
-  - TEAM_ID: 72SA8V3WYL
+  - TEAM_ID: DT2C2FZ7U2
   - CUSTOM_PLIST: |-
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -29,23 +29,23 @@ app:
             <string>development</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>com.bitrise.code-sign-test</key>
-              <string>BitriseBot-Wildcard</string>
-              <key>com.bitrise.code-sign-test.share-extension</key>
-              <string>BitriseBot-Wildcard</string>
-              <key>com.bitrise.code-sign-test.watchkitapp</key>
-              <string>BitriseBot-Wildcard</string>
-              <key>com.bitrise.code-sign-test.watchkitapp.watchkitextension</key>
-              <string>BitriseBot-Wildcard</string>
+              <key>io.bitrise.samples.multi-target</key>
+              <string>Bitrise Samples Wildcard Development</string>
+              <key>io.bitrise.samples.multi-target.share-extension</key>
+              <string>Bitrise Samples Wildcard Development</string>
+              <key>io.bitrise.samples.multi-target.watchkitapp</key>
+              <string>Bitrise Samples Wildcard Development</string>
+              <key>io.bitrise.samples.multi-target.watchkitapp.watchkitextension</key>
+              <string>Bitrise Samples Wildcard Development</string>
             </dict>
             <key>signingCertificate</key>
-            <string>Apple Development: Tooling Bot Bitrise (H3RAQJ3F2B)</string>
+            <string>Apple Development: Tooling Bot Bitrise (TAZPAZQFT8)</string>
             <key>signingStyle</key>
             <string>manual</string>
             <key>stripSwiftSymbols</key>
             <true/>
             <key>teamID</key>
-            <string>72SA8V3WYL</string>
+            <string>DT2C2FZ7U2</string>
             <key>thinning</key>
             <string>&lt;none&gt;</string>
           </dict>
@@ -71,17 +71,17 @@ workflows:
         title: Step Test - Multi Target API Key auto signing
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta-managed.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta-managed.xcarchive
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
-        - api_key_path: $BITFALL_APPSTORECONNECT_API_KEY_URL
-        - api_key_id: $BITFALL_APPSTORECONNECT_API_KEY_ID
-        - api_key_issuer_id: $BITFALL_APPSTORECONNECT_API_KEY_ISSUER_ID
+        - api_key_path: $BLTD_APPSTORECONNECT_API_KEY_URL
+        - api_key_id: $BLTD_APPSTORECONNECT_API_KEY_ID
+        - api_key_issuer_id: $BLTD_APPSTORECONNECT_API_KEY_ISSUER_ID
     - script:
         title: Restore Bitrise API connection env vars
         inputs:
@@ -98,11 +98,11 @@ workflows:
         title: Step Test
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_IOS_CERTIFICATE_NOPASSPHRASE_URL
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_NOPASSPHRASE_URL
         - passphrase_list: ""
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
@@ -116,22 +116,22 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-        - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
+        - certificate_url: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - provisioning_profile_url: $BLTD_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
         title: Step Test - Multi Target API Key auto signing
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta.xcarchive
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-        - fallback_provisioning_profile_url_list: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - fallback_provisioning_profile_url_list: $BLTD_PROVISIONING_PROFILE_URL_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     after_run:
@@ -145,38 +145,38 @@ workflows:
         title: Step Test - Xcode managed (XCode 13+)
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta-managed.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta-managed.xcarchive
         - product: app
         - automatic_code_signing: api-key
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
         title: Step Test - Bitrise managed, app-store-connect
         inputs:
         - distribution_method: app-store
-        - archive_path: ./archives/Fruta.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta.xcarchive
         - product: app-clip
         - automatic_code_signing: api-key
         - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
         title: Step Test - Bitrise managed, development App Clip
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta.xcarchive
         - product: app-clip
         - automatic_code_signing: api-key
         - verbose_log: "yes"
         - min_profile_validity: 30
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
     - path::./:
@@ -185,12 +185,12 @@ workflows:
         title: Step Test - Bitrise managed Apple ID, tvOS
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/TVOS.xcarchive
+        - archive_path: ./archives/bitrise-limited/TVOS.xcarchive
         - min_profile_validity: 30
         - automatic_code_signing: apple-id
         - verbose_log: "yes"
-        - certificate_url_list: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - passphrase_list: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - certificate_url_list: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - passphrase_list: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
         - export_development_team: $TEAM_ID
         - keychain_path: $BITRISE_KEYCHAIN_PATH
         - keychain_password: $BITRISE_KEYCHAIN_PASSWORD
@@ -201,34 +201,34 @@ workflows:
     steps:
     - certificate-and-profile-installer:
         inputs:
-        - certificate_url: $BITFALL_APPLE_APPLE_CERTIFICATE_URL_LIST
-        - certificate_passphrase: $BITFALL_APPLE_APPLE_CERTIFICATE_PASSPHRASE_LIST
-        - provisioning_profile_url: $BITFALL_APPLE_PROVISIONING_PROFILE_URL_LIST
+        - certificate_url: $BLTD_APPLE_CERTIFICATE_URL_LIST
+        - certificate_passphrase: $BLTD_APPLE_CERTIFICATE_PASSPHRASE_LIST
+        - provisioning_profile_url: $BLTD_PROVISIONING_PROFILE_URL_LIST
         - install_defaults: "no"
     - path::./:
         title: Step Test - iOS archive
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/ios.xcarchive
+        - archive_path: ./archives/bitrise-limited/ios.xcarchive
         - verbose_log: "yes"
     - path::./:
         title: Step Test - Custom plist
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/ios.xcarchive
+        - archive_path: ./archives/bitrise-limited/ios.xcarchive
         - custom_export_options_plist_content: $CUSTOM_PLIST
         - verbose_log: "yes"
     - path::./:
         title: Step Test - TV OS
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/TVOS.xcarchive
+        - archive_path: ./archives/bitrise-limited/TVOS.xcarchive
         - verbose_log: "yes"
     - path::./:
         title: Step Test - App Clip
         inputs:
         - distribution_method: development
-        - archive_path: ./archives/Fruta.xcarchive
+        - archive_path: ./archives/bitrise-limited/Fruta.xcarchive
         - product: app-clip
         - verbose_log: "yes"
 
